@@ -7,11 +7,11 @@ __version__ = "1.0.0"
 
 from argparse import ArgumentParser, ArgumentTypeError
 from pathlib import Path
+from shutil import which
 from math import ceil
 from html import escape
 import re
 import sys
-import shutil
 import subprocess
 
 THRESHOLD = 15
@@ -47,10 +47,10 @@ def validate_percent(value):
 
 
 def check_dependencies():
-  if not shutil.which('ffmpeg'):
+  if not which('ffmpeg'):
     sys.stderr.write("ERROR: 'ffmpeg' not found\n")
     sys.exit(1)
-  if not shutil.which('ffprobe'):
+  if not which('ffprobe'):
     sys.stderr.write("ERROR: 'ffprobe' not found\n")
     sys.exit(1)
 
