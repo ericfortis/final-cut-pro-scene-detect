@@ -125,9 +125,11 @@ def detect_scene_cuts(video, duration) -> list[float]:
   return cuts
 
 
-def print_progress(progress, n_cuts):
-  sys.stdout.write(f'\r{int(progress * 100):3}% (Cuts {n_cuts})')
-  sys.stdout.flush()
+def print_progress(progress: float, n_cuts):
+  length = 33
+  filled = int(length * progress)
+  bar = '█' * filled + '⠂' * (length - filled)
+  print(f'\r{bar} {int(progress * 100)}% (Cuts {n_cuts})', end='')
 
 
 def validate_threshold_percent(value):
