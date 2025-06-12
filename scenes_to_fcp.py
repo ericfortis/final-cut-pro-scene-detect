@@ -14,7 +14,7 @@ import sys
 import subprocess
 
 THRESHOLD = 15
-PROXY_WIDTH = 320  # lower-res is OK for analysis
+PROXY_WIDTH = 320
 
 
 def main():
@@ -30,7 +30,8 @@ def main():
                       help='Width of scaled video used for speeding up analysis (default: %(default)s)')
   args = parser.parse_args()
 
-  check_dependencies()
+  check_dependency('ffmpeg')
+  check_dependency('ffprobe')
   out_xml = scenes_to_fcp(args.video, args.proxy_width, args.threshold)
 
   output_file = Path(args.video).with_suffix('.fcpxml')
@@ -45,12 +46,9 @@ def validate_percent(value):
   return f
 
 
-def check_dependencies():
-  if not which('ffmpeg'):
-    sys.stderr.write("ERROR: 'ffmpeg' not found\n")
-    sys.exit(1)
-  if not which('ffprobe'):
-    sys.stderr.write("ERROR: 'ffprobe' not found\n")
+def check_dependency(program):
+  if not which(program):
+    sys.stderr.write(f"ERROR: '{program}' not found\n")
     sys.exit(1)
 
 
