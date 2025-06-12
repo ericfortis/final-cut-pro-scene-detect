@@ -19,7 +19,6 @@ PROXY_WIDTH = 320  # lower-res is OK for analysis
 
 
 def main():
-  check_dependencies()
   parser = ArgumentParser(description='Generates a Final Cut Pro XML project with scene cuts from a video')
   parser.add_argument('video', help='Path to the input video file')
   parser.add_argument('-t', '--threshold',
@@ -32,6 +31,7 @@ def main():
                       help='Width of scaled video used for speeding up analysis (default: %(default)s)')
   args = parser.parse_args()
 
+  check_dependencies()
   out_xml = scenes_to_fcp(args.video, args.proxy_width, args.threshold)
 
   output_file = Path(args.video).with_suffix('.fcpxml')
