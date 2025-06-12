@@ -87,7 +87,7 @@ def scenes_to_fcp(video, proxy_width=PROXY_WIDTH, threshold=THRESHOLD):
   <library>
     <event>
       <project>
-        <sequence format="r1" tcStart="0s" tcFormat="NDF">
+        <sequence format="r1" tcStart="0s">
           <spine>'''
 
   prev_frame = 0
@@ -95,7 +95,7 @@ def scenes_to_fcp(video, proxy_width=PROXY_WIDTH, threshold=THRESHOLD):
     offset_ticks = prev_frame * fps_denominator
     duration_ticks = (frame - prev_frame) * fps_denominator
     xml += f'''
-            <asset-clip ref="r2" tcFormat="NDF" name="{video_name}"
+            <asset-clip ref="r2" name="{video_name}"
               offset="{offset_ticks}/{fps_numerator}s"
               start="{offset_ticks}/{fps_numerator}s"
               duration="{duration_ticks}/{fps_numerator}s"/>'''

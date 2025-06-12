@@ -14,29 +14,29 @@
   <library>
     <event>
       <project>
-        <sequence format="r1" tcStart="0s" tcFormat="NDF">
+        <sequence format="r1" tcStart="0s">
           <spine>
-            <asset-clip ref="r2" tcFormat="NDF" name="2997fps"
+            <asset-clip ref="r2" name="2997fps"
               offset="0/30000s"
               start="0/30000s"
               duration="150150/30000s"/>
-            <asset-clip ref="r2" tcFormat="NDF" name="2997fps"
+            <asset-clip ref="r2" name="2997fps"
               offset="150150/30000s"
               start="150150/30000s"
               duration="150150/30000s"/>
-            <asset-clip ref="r2" tcFormat="NDF" name="2997fps"
+            <asset-clip ref="r2" name="2997fps"
               offset="300300/30000s"
               start="300300/30000s"
               duration="150150/30000s"/>
-            <asset-clip ref="r2" tcFormat="NDF" name="2997fps"
+            <asset-clip ref="r2" name="2997fps"
               offset="450450/30000s"
               start="450450/30000s"
               duration="150150/30000s"/>
-            <asset-clip ref="r2" tcFormat="NDF" name="2997fps"
+            <asset-clip ref="r2" name="2997fps"
               offset="600600/30000s"
               start="600600/30000s"
               duration="150150/30000s"/>
-            <asset-clip ref="r2" tcFormat="NDF" name="2997fps"
+            <asset-clip ref="r2" name="2997fps"
               offset="750750/30000s"
               start="750750/30000s"
               duration="150150/30000s"/>
