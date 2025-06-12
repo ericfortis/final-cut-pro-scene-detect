@@ -12,7 +12,34 @@ THRESHOLD = 0.15
 PROXY_WIDTH = 320  # lower-res is OK for analysis
 
 
-def scenes_to_fcp(video):
+def main():
+  parser = ArgumentParser(description='Generates a Final Cut Pro XML project with scene cuts from a video')
+  parser.add_argument('video', help='Path to the input video file')
+  parser.add_argument('-t', '--threshold',
+                      type=validate_threshold_percent,
+                      default=int(THRESHOLD * 100),
+                      help='Minimum frame difference percent for detecting scene changes. Lower is more sensitive. (0-100, default: %(default)s)')
+  parser.add_argument('-w', '--proxy-width',
+                      type=int,
+                      default=PROXY_WIDTH,
+                      help='Width of scaled video used for speeding up analysis (default: %(default)s)')
+  args = parser.parse_args()
+
+  out_xml = scenes_to_fcp(args.video, args.proxy_width, args.threshold / 100)
+
+  output_file = Path(args.video).with_suffix('.fcpxml')
+  Path(output_file).write_text(out_xml, encoding='utf-8')
+  print(f'\n✅  Saved file://{Path(output_file).resolve()}')
+
+
+def validate_threshold_percent(value):
+  f = float(value)
+  if not (0 <= f <= 100):
+    raise ArgumentTypeError('Must be between 0 and 100')
+  return f
+
+
+def scenes_to_fcp(video, proxy_width=PROXY_WIDTH, threshold=THRESHOLD):
   video_name = escape(Path(video).stem)
   video_url = Path(video).name
 
@@ -24,7 +51,7 @@ def scenes_to_fcp(video):
   fps_numerator, fps_denominator = map(int, r_frame_rate.split('/'))
   fps = fps_numerator / fps_denominator
 
-  cuts = detect_scene_cuts(video, duration)
+  cuts = detect_scene_cuts(video, duration, proxy_width, threshold)
   cuts.append(duration)
   cuts = [ceil(t * fps) for t in cuts]  # seconds to frames
 
@@ -88,12 +115,12 @@ def video_attr(video, attr) -> str:
     sys.exit(1)
 
 
-def detect_scene_cuts(video, duration) -> list[float]:
+def detect_scene_cuts(video, duration, proxy_width, threshold) -> list[float]:
   pts_time_pattern = re.compile(r'pts_time:(\d+\.?\d*)')
   cmd = [
     'ffmpeg', '-nostats', '-hide_banner', '-an',
     '-i', video,
-    '-vf', f"scale={PROXY_WIDTH}:-1,select='gt(scene,{THRESHOLD})',metadata=print",
+    '-vf', f"scale={proxy_width}:-1,select='gt(scene,{threshold})',metadata=print",
     '-fps_mode', 'vfr',
     '-f', 'null',
     '-'
@@ -132,33 +159,5 @@ def print_progress(progress: float, n_cuts):
   print(f'\r{bar} {int(progress * 100)}% (Cuts {n_cuts})', end='')
 
 
-def validate_threshold_percent(value):
-  f = float(value)
-  if not (0 <= f <= 100):
-    raise ArgumentTypeError('Must be between 0 and 100')
-  return f
-
-
 if __name__ == '__main__':
-  parser = ArgumentParser(description='Generates FCPXML project with scene cuts from a video.')
-  parser.add_argument('video', help='Path to the input video file')
-  parser.add_argument('-t', '--threshold',
-                      type=validate_threshold_percent,
-                      default=int(THRESHOLD * 100),
-                      help='Minimum frame difference percent for detecting scene changes. Lower is more sensitive. (0-100, default: %(default)s)')
-  parser.add_argument('-w', '--proxy-width',
-                      type=int,
-                      default=PROXY_WIDTH,
-                      help='Width of scaled video used for speeding up analysis (default: %(default)s)')
-
-  args = parser.parse_args()
-
-  THRESHOLD = args.threshold / 100
-  PROXY_WIDTH = args.proxy_width
-
-  out_xml = scenes_to_fcp(args.video)
-
-  output_file = Path(args.video).with_suffix('.fcpxml')
-  Path(output_file).write_text(out_xml, encoding='utf-8')
-
-  print(f'\n✅  Saved file://{Path(output_file).resolve()}')
+  main()
