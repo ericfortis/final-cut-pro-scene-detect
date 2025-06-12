@@ -11,6 +11,7 @@ from math import ceil
 from html import escape
 import re
 import sys
+import shutil
 import subprocess
 
 THRESHOLD = 15
@@ -18,6 +19,7 @@ PROXY_WIDTH = 320  # lower-res is OK for analysis
 
 
 def main():
+  check_dependencies()
   parser = ArgumentParser(description='Generates a Final Cut Pro XML project with scene cuts from a video')
   parser.add_argument('video', help='Path to the input video file')
   parser.add_argument('-t', '--threshold',
@@ -35,6 +37,15 @@ def main():
   output_file = Path(args.video).with_suffix('.fcpxml')
   Path(output_file).write_text(out_xml, encoding='utf-8')
   print(f'\n✅  Saved file://{Path(output_file).resolve()}')
+
+
+def check_dependencies():
+  if shutil.which('ffmpeg') is None:
+    sys.stderr.write("ERROR: 'ffmpeg' not found\n")
+    sys.exit(1)
+  if shutil.which('ffprobe') is None:
+    sys.stderr.write("ERROR: 'ffprobe' not found\n")
+    sys.exit(1)
 
 
 def validate_threshold_percent(value):
