@@ -47,10 +47,10 @@ def validate_percent(value):
 
 
 def check_dependencies():
-  if shutil.which('ffmpeg') is None:
+  if not shutil.which('ffmpeg'):
     sys.stderr.write("ERROR: 'ffmpeg' not found\n")
     sys.exit(1)
-  if shutil.which('ffprobe') is None:
+  if not shutil.which('ffprobe'):
     sys.stderr.write("ERROR: 'ffprobe' not found\n")
     sys.exit(1)
 
