@@ -148,9 +148,9 @@ def detect_scene_cuts(video, duration, proxy_width, threshold) -> list[float]:
         match = pts_time_pattern.search(line)
         if match:
           try:
-            time_str = float(match.group(1))
-            cuts.append(time_str)
-            print_progress(time_str / duration, len(cuts))
+            cut_time = float(match.group(1))
+            cuts.append(cut_time)
+            print_progress(cut_time / duration, len(cuts))
           except ValueError:
             pass
       process.wait()
