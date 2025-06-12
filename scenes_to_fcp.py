@@ -8,7 +8,7 @@ import re
 import sys
 import subprocess
 
-THRESHOLD = 0.15
+THRESHOLD = 15
 PROXY_WIDTH = 320  # lower-res is OK for analysis
 
 
@@ -17,7 +17,7 @@ def main():
   parser.add_argument('video', help='Path to the input video file')
   parser.add_argument('-t', '--threshold',
                       type=validate_threshold_percent,
-                      default=int(THRESHOLD * 100),
+                      default=THRESHOLD,
                       help='Minimum frame difference percent for detecting scene changes. Lower is more sensitive. (0-100, default: %(default)s)')
   parser.add_argument('-w', '--proxy-width',
                       type=int,
@@ -25,7 +25,7 @@ def main():
                       help='Width of scaled video used for speeding up analysis (default: %(default)s)')
   args = parser.parse_args()
 
-  out_xml = scenes_to_fcp(args.video, args.proxy_width, args.threshold / 100)
+  out_xml = scenes_to_fcp(args.video, args.proxy_width, args.threshold)
 
   output_file = Path(args.video).with_suffix('.fcpxml')
   Path(output_file).write_text(out_xml, encoding='utf-8')
@@ -120,7 +120,7 @@ def detect_scene_cuts(video, duration, proxy_width, threshold) -> list[float]:
   cmd = [
     'ffmpeg', '-nostats', '-hide_banner', '-an',
     '-i', video,
-    '-vf', f"scale={proxy_width}:-1,select='gt(scene,{threshold})',metadata=print",
+    '-vf', f"scale={proxy_width}:-1,select='gt(scene,{threshold / 100})',metadata=print",
     '-fps_mode', 'vfr',
     '-f', 'null',
     '-'
