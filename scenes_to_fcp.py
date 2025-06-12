@@ -22,7 +22,7 @@ def main():
   parser = ArgumentParser(description='Generates a Final Cut Pro XML project with scene cuts from a video')
   parser.add_argument('video', help='Path to the input video file')
   parser.add_argument('-t', '--threshold',
-                      type=validate_threshold_percent,
+                      type=validate_percent,
                       default=THRESHOLD,
                       help='Minimum frame difference percent for detecting scene changes. Lower is more sensitive. (0-100, default: %(default)s)')
   parser.add_argument('-w', '--proxy-width',
@@ -39,6 +39,13 @@ def main():
   print(f'\n✅  Saved file://{Path(output_file).resolve()}')
 
 
+def validate_percent(value):
+  f = float(value)
+  if not (0 <= f <= 100):
+    raise ArgumentTypeError('Must be between 0 and 100')
+  return f
+
+
 def check_dependencies():
   if shutil.which('ffmpeg') is None:
     sys.stderr.write("ERROR: 'ffmpeg' not found\n")
@@ -46,13 +53,6 @@ def check_dependencies():
   if shutil.which('ffprobe') is None:
     sys.stderr.write("ERROR: 'ffprobe' not found\n")
     sys.exit(1)
-
-
-def validate_threshold_percent(value):
-  f = float(value)
-  if not (0 <= f <= 100):
-    raise ArgumentTypeError('Must be between 0 and 100')
-  return f
 
 
 def scenes_to_fcp(video, proxy_width=PROXY_WIDTH, threshold=THRESHOLD):
