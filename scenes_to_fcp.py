@@ -9,7 +9,6 @@ from argparse import ArgumentParser, ArgumentTypeError
 from pathlib import Path
 from shutil import which
 from math import ceil
-from html import escape
 import re
 import sys
 import subprocess
@@ -56,8 +55,7 @@ def check_dependencies():
 
 
 def scenes_to_fcp(video, proxy_width=PROXY_WIDTH, threshold=THRESHOLD):
-  video_name = escape(Path(video).stem)
-  video_url = Path(video).name
+  video_rel_path = Path(video).name
 
   width = video_attr(video, 'width')
   height = video_attr(video, 'height')
@@ -81,7 +79,7 @@ def scenes_to_fcp(video, proxy_width=PROXY_WIDTH, threshold=THRESHOLD):
       height="{height}"
       frameDuration="{fps_denominator}/{fps_numerator}s" />
     <asset id="r2" start="0s" format="r1">
-      <media-rep kind="original-media" src="{video_url}"/>
+      <media-rep kind="original-media" src="{video_rel_path}"/>
     </asset>
   </resources>
   <library>
@@ -95,7 +93,7 @@ def scenes_to_fcp(video, proxy_width=PROXY_WIDTH, threshold=THRESHOLD):
     offset_ticks = prev_frame * fps_denominator
     duration_ticks = (frame - prev_frame) * fps_denominator
     xml += f'''
-            <asset-clip ref="r2" name="{video_name}"
+            <asset-clip ref="r2"
               offset="{offset_ticks}/{fps_numerator}s"
               start="{offset_ticks}/{fps_numerator}s"
               duration="{duration_ticks}/{fps_numerator}s"/>'''
