@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE fcpxml>
+
+<fcpxml version="1.13">
+  <resources>
+    <format
+      id="r1"
+      name="FFVideoFormat1080p60"
+      frameDuration="100/6000s"
+      width="1920"
+      height="1080"
+      colorSpace="1-1-1 (Rec. 709)"/>
+    <asset id="r2" name="60fps" start="0s" duration="30s" hasVideo="1" format="r1" videoSources="1">
+      <media-rep kind="original-media" src="60fps.mov"/>
+    </asset>
+  </resources>
+  <library>
+    <event>
+      <project name="fcp60-rubric">
+        <sequence format="r1" duration="30s" tcStart="0s" tcFormat="NDF" audioLayout="stereo" audioRate="48k">
+          <spine>
+            <asset-clip ref="r2" name="60fps" tcFormat="NDF" offset="0s"               duration="5s" />
+            <asset-clip ref="r2" name="60fps" tcFormat="NDF" offset="5s"   start="5s"  duration="5s" />
+            <asset-clip ref="r2" name="60fps" tcFormat="NDF" offset="10s"  start="10s" duration="5s" />
+            <asset-clip ref="r2" name="60fps" tcFormat="NDF" offset="15s"  start="15s" duration="5s" />
+            <asset-clip ref="r2" name="60fps" tcFormat="NDF" offset="20s"  start="20s" duration="5s" />
+            <asset-clip ref="r2" name="60fps" tcFormat="NDF" offset="25s"  start="25s" duration="5s" />
+          </spine>
+        </sequence>
+      </project>
+    </event>
+  </library>
+</fcpxml>
