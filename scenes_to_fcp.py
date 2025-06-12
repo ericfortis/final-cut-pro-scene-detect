@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 
+# Author: Eric Fortis
+# License: MIT
+
+__version__ = "1.0.0"
+
 from argparse import ArgumentParser, ArgumentTypeError
 from pathlib import Path
 from math import ceil
