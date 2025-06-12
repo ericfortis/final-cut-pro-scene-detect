@@ -71,8 +71,7 @@ def scenes_to_fcp(video):
 
 def video_attr(video, attr) -> str:
   cmd = [
-    'ffprobe',
-    '-hide_banner',
+    'ffprobe', '-hide_banner',
     '-v', 'error',
     '-select_streams', 'v:0',
     '-show_entries', f'stream={attr}',
@@ -91,65 +90,38 @@ def video_attr(video, attr) -> str:
 
 def detect_scene_cuts(video, duration) -> list[float]:
   pts_time_pattern = re.compile(r'pts_time:(\d+\.?\d*)')
-
   cmd = [
-    'ffmpeg',
-    '-nostats',
-    '-hide_banner',
-    '-an',
+    'ffmpeg', '-nostats', '-hide_banner', '-an',
     '-i', video,
-
-    # select frames greater than (gt) THRESHOLD
     '-vf', f"scale={PROXY_WIDTH}:-1,select='gt(scene,{THRESHOLD})',metadata=print",
-
     '-fps_mode', 'vfr',
     '-f', 'null',
     '-'
   ]
-
   cuts = []
   stderr_buffer = []
-
-  process = None
   try:
-    process = subprocess.Popen(
-      cmd,
-      stdout=subprocess.PIPE,
-      stderr=subprocess.PIPE,
-      text=True,
-      bufsize=1,
-      universal_newlines=True
-    )
-
-    for line in process.stderr:
-      stderr_buffer.append(line)
-      match = pts_time_pattern.search(line)
-      if match:
-        try:
-          time_str = float(match.group(1))
-          cuts.append(time_str)
-          print_progress(time_str / duration, len(cuts))
-        except ValueError:
-          pass
-
-    process.wait()
-    print_progress(1, len(cuts))
-
-    if process.returncode != 0:
-      raise RuntimeError(f'\nffmpeg exited with code {process.returncode}:\n{''.join(stderr_buffer)}')
-
+    with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True) as process:
+      for line in process.stderr:
+        stderr_buffer.append(line)
+        match = pts_time_pattern.search(line)
+        if match:
+          try:
+            time_str = float(match.group(1))
+            cuts.append(time_str)
+            print_progress(time_str / duration, len(cuts))
+          except ValueError:
+            pass
+      process.wait()
+      print_progress(1, len(cuts))
+      if process.returncode != 0:
+        raise RuntimeError(f'\nffmpeg exited with code {process.returncode}:\n{''.join(stderr_buffer)}')
   except KeyboardInterrupt:  # Ctrl+C terminates analysis, and we create a file with the progress so far
     if process:
       process.terminate()
   except Exception as e:
     sys.stderr.write(f'\nAn unexpected error occurred during ffmpeg execution: {e}\n')
     sys.exit(1)
-  finally:
-    if process and process.stdout:
-      process.stdout.close()
-    if process and process.stderr:
-      process.stderr.close()
-
   return cuts
 
 
@@ -163,6 +135,7 @@ def validate_threshold_percent(value):
   if not (0 <= f <= 100):
     raise ArgumentTypeError('Must be between 0 and 100')
   return f
+
 
 if __name__ == '__main__':
   parser = ArgumentParser(description='Generates FCPXML project with scene cuts from a video.')
@@ -187,4 +160,3 @@ if __name__ == '__main__':
   Path(output_file).write_text(out_xml, encoding='utf-8')
 
   print(f'\n✅  Saved file://{Path(output_file).resolve()}')
-

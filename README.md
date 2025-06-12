@@ -55,7 +55,7 @@ Lower values are more sensitive. This value sets the minimum
 frame difference percentage used to detect scene changes.
 
 ```shell
-python3 scene_to_fcp.py --threshold 30 my-video.mp4
+python3 scenes_to_fcp.py --threshold 30 my-video.mp4
 ```
 
 ### Proxy Width
@@ -66,5 +66,5 @@ used to scale down the video during processing. It does **not**
 modify your original video, and the proxy version is never saved.
 
 ```shell
-python3 scene_to_fcp.py --proxy-width 240 my-video.mp4
+python3 scenes_to_fcp.py --proxy-width 240 my-video.mp4
 ```
