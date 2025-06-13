@@ -1,0 +1,18 @@
+[project]
+name = "final-cut-pro-scene-detect"
+version = "1.0.0"
+description = "Scene detection and FCPXML generator"
+authors = [{ name = "Eric Fortis" }]
+license = { text = "MIT" }
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+
+[tool.mypy]
+strict = true
+files = ["src", "tests"]
+
+[project.scripts]
+fcpscene = "fcpscene.cli:main"
+fcpscene-gui = "fcpscene.gui:GUI.run"

@@ -8,6 +8,7 @@ For example, the timeline below has six clips (five cuts).
 ![](./README-example.jpg)
 
 
+<br>
 
 ## Installation
 
@@ -16,18 +17,32 @@ For example, the timeline below has six clips (five cuts).
 1. First, install [Homebrew](https://brew.sh). Then, in the Terminal type:
 
 ```shell
-brew install ffmpeg
+brew install fcpscene
 ```
 
-2. Download [scenes_to_fcp.py](https://raw.githubusercontent.com/ericfortis/final-cut-pro-scene-detect/refs/heads/main/scenes_to_fcp.py) from this repository.
-
-
 ## Running
-
-In the Terminal app, type the following (adjust the file paths).
+In the Terminal app, type:
 
 ```shell
-python3 ~/Downloads/scenes_to_fcp.py ~/Desktop/my-video.mp4
+fcpscene-gui
+```
+
+![](README-gui.png)
+
+### Importing into Final Cut Pro
+Double-click the generated `.fcpxml` file to import it.
+
+Or, import it from Final Cut Pro: File &rarr; Import &rarr; XML &rarr;  Select the generated `.fcpxml`
+
+<br>
+---
+
+
+
+## Or, Run the CLI
+
+```shell
+fcpscene ~/Desktop/my-video.mp4
 ```
 
 In that example, an `~/Desktop/my-video.fcpxml` project will
@@ -38,27 +53,18 @@ file into the Terminal — it will paste the path for you.
 
 
 
-## Importing into Final Cut Pro
-You can double-click the `.fcpxml` file to import it.
+### Options
 
-Or, import it from Final Cut Pro:
+#### Sensitivity
+Range: 0-100, Default: **85**
 
-File &rarr; Import &rarr; XML &rarr;  Select the generated `.fcpxml`
-
-
-## Options
-
-### Threshold
-Range: 0-100, Default: **15**
-
-Lower values are more sensitive. This value sets the minimum
-frame difference percentage used to detect scene changes.
+This value sets the frame difference percentage used to detect scene changes.
 
 ```shell
-python3 scenes_to_fcp.py --threshold 30 my-video.mp4
+python3 scenes_to_fcp.py --sensitivity 70 my-video.mp4
 ```
 
-### Proxy Width
+#### Proxy Width
 Default: **320**
 
 Lower values speed up analysis. This sets the temporary width
@@ -68,3 +74,7 @@ modify your original video, and the proxy version is never saved.
 ```shell
 python3 scenes_to_fcp.py --proxy-width 240 my-video.mp4
 ```
+
+## License
+
+[MIT](LICENSE) © 2025 Eric Fortis

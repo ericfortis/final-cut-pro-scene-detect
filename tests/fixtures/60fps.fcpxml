@@ -8,7 +8,7 @@
       height="1080"
       frameDuration="1/60s" />
     <asset id="r2" start="0s" format="r1">
-      <media-rep kind="original-media" src="60fps.mov"/>
+      <media-rep kind="original-media" src="60fps.mp4"/>
     </asset>
   </resources>
   <library>

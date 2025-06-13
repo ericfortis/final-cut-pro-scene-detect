@@ -1,0 +1,12 @@
+#!/usr/bin/env python3
+
+import sys
+from pathlib import Path
+
+
+# for homebrew
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "libexec/lib/python3.11/site-packages"))
+
+from fcpscene.gui import GUI
+
+GUI.run()

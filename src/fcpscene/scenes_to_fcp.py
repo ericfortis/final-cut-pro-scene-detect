@@ -1,58 +1,20 @@
 #!/usr/bin/env python3
 
-# Author: Eric Fortis
-# License: MIT
+__version__ = '1.0.0'
 
-__version__ = "1.0.0"
-
-from argparse import ArgumentParser, ArgumentTypeError
 from pathlib import Path
-from shutil import which
 from math import ceil
 import re
 import sys
+import signal
 import subprocess
 
-THRESHOLD = 15
+from fcpscene.event_bus import EventBus
+
 PROXY_WIDTH = 320
 
 
-def main():
-  parser = ArgumentParser(description='Generates a Final Cut Pro XML project with scene cuts from a video')
-  parser.add_argument('video', help='Path to the input video file')
-  parser.add_argument('-t', '--threshold',
-                      type=validate_percent,
-                      default=THRESHOLD,
-                      help='Minimum frame difference percent for detecting scene changes. Lower is more sensitive. (0-100, default: %(default)s)')
-  parser.add_argument('-w', '--proxy-width',
-                      type=int,
-                      default=PROXY_WIDTH,
-                      help='Width of scaled video used for speeding up analysis (default: %(default)s)')
-  args = parser.parse_args()
-
-  check_dependency('ffmpeg')
-  check_dependency('ffprobe')
-  out_xml = scenes_to_fcp(args.video, args.proxy_width, args.threshold)
-
-  output_file = Path(args.video).with_suffix('.fcpxml')
-  Path(output_file).write_text(out_xml, encoding='utf-8')
-  print(f'\n✅  Saved file://{Path(output_file).resolve()}')
-
-
-def validate_percent(value):
-  f = float(value)
-  if not (0 <= f <= 100):
-    raise ArgumentTypeError('Must be between 0 and 100')
-  return f
-
-
-def check_dependency(program):
-  if not which(program):
-    sys.stderr.write(f"Missing dependency: {program}\n")
-    sys.exit(1)
-
-
-def scenes_to_fcp(video, proxy_width=PROXY_WIDTH, threshold=THRESHOLD):
+def scenes_to_fcp(video, bus, sensitivity, proxy_width=PROXY_WIDTH):
   video_rel_path = Path(video).name
 
   width = video_attr(video, 'width')
@@ -63,7 +25,7 @@ def scenes_to_fcp(video, proxy_width=PROXY_WIDTH, threshold=THRESHOLD):
   fps_numerator, fps_denominator = map(int, r_frame_rate.split('/'))
   fps = fps_numerator / fps_denominator
 
-  cuts = detect_scene_cuts(video, duration, proxy_width, threshold)
+  cuts = detect_scene_cuts(video, duration, proxy_width, sensitivity, bus)
   cuts.append(duration)
   cuts = [ceil(t * fps) for t in cuts]  # seconds to frames
 
@@ -127,52 +89,56 @@ def video_attr(video, attr) -> str:
     sys.exit(1)
 
 
-def detect_scene_cuts(video, duration, proxy_width, threshold) -> list[float]:
-  pts_time_pattern = re.compile(r'pts_time:(\d+\.?\d*)')
+def detect_scene_cuts(video, video_duration, proxy_width, sensitivity, bus: EventBus) -> list[float]:
+  cut_time_regex = re.compile(r'Parsed_metadata.*pts_time:(\d+\.?\d*)')
+
+  # ffmpeg writes the cut time (from the `metadata` filter) to stderr
   cmd = [
     'ffmpeg', '-nostats', '-hide_banner', '-an',
     '-i', video,
-    '-vf', f"scale={proxy_width}:-1,select='gt(scene,{threshold / 100})',metadata=print",
-    '-fps_mode', 'vfr',
-    '-f', 'null',
-    '-'
+    '-vf', ','.join([
+      f'scale={proxy_width}:-1',
+      f"select='gt(scene, {1 - sensitivity / 100})'",  # select when scene change probability is greater than `threshold`
+      'metadata=print'
+    ]),
+    '-fps_mode', 'vfr',  # ensure the natural frame timing is not changed by the `scene` filter
+    '-f', 'null',  # null muxer for discarding the processed video (we won’t write the encoded binary data)
+    '-'  # output to stdout (null muxer output nothing)
   ]
   cuts = []
   stderr_buffer = []
+  user_stopped = False
   try:
     with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True) as process:
-      for line in process.stderr:
+      def on_stop():
+        if process and process.poll() is None:
+          nonlocal user_stopped
+          user_stopped = True
+          process.send_signal(signal.SIGINT)
+
+      bus.subscribe_stop(on_stop)
+
+      for line in process.stderr:  # while stderr is open
         stderr_buffer.append(line)
-        match = pts_time_pattern.search(line)
+        match = cut_time_regex.search(line)
         if match:
           try:
             cut_time = float(match.group(1))
             cuts.append(cut_time)
-            print_progress(cut_time / duration, len(cuts))
+            bus.emit_progress(cut_time, video_duration, len(cuts))
           except ValueError:
             pass
+
       process.wait()
-      print_progress(1, len(cuts))
-      if process.returncode != 0:
-        raise RuntimeError(f'\nffmpeg exited with code {process.returncode}:\n{''.join(stderr_buffer)}')
+      bus.emit_progress(video_duration, video_duration, len(cuts))
+      if not user_stopped and process.returncode != 0:
+        raise RuntimeError(f'\nffmpeg exited with code {process.returncode}:\n' + ''.join(stderr_buffer))
   except KeyboardInterrupt:  # Ctrl+C terminates analysis, and we create a file with the progress so far
     if process:
       process.terminate()
   except Exception as e:
     sys.stderr.write(f'\nAn unexpected error occurred during ffmpeg execution: {e}\n')
     sys.exit(1)
+  finally:
+    bus.unsubscribe_stop()
   return cuts
-
-
-def print_progress(progress: float, n_cuts):
-  length = 42
-  partial_chars = [' ', '▎', '▍', '▋']
-  filled_blocks = int(length * progress)
-  partial_fill = (length * progress) - filled_blocks
-  partial = partial_chars[min(int(len(partial_chars) * partial_fill), len(partial_chars) - 1)]
-  bar = '█' * filled_blocks + partial + '⠂' * (length - filled_blocks)
-  print(f'\r{bar} {int(progress * 100)}% (Cuts {n_cuts})', end='')
-
-
-if __name__ == '__main__':
-  main()
