@@ -165,9 +165,12 @@ def detect_scene_cuts(video, duration, proxy_width, threshold) -> list[float]:
 
 
 def print_progress(progress: float, n_cuts):
-  length = 33
-  filled = int(length * progress)
-  bar = '█' * filled + '⠂' * (length - filled)
+  length = 42
+  partial_chars = [' ', '▎', '▍', '▋']
+  filled_blocks = int(length * progress)
+  partial_fill = (length * progress) - filled_blocks
+  partial = partial_chars[min(int(len(partial_chars) * partial_fill), len(partial_chars) - 1)]
+  bar = '█' * filled_blocks + partial + '⠂' * (length - filled_blocks)
   print(f'\r{bar} {int(progress * 100)}% (Cuts {n_cuts})', end='')
 
 
