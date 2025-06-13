@@ -48,7 +48,7 @@ def validate_percent(value):
 
 def check_dependency(program):
   if not which(program):
-    sys.stderr.write(f"ERROR: '{program}' not found\n")
+    sys.stderr.write(f"Missing dependency: {program}\n")
     sys.exit(1)
 
 
