@@ -12,9 +12,8 @@ For example, the timeline below has six clips (five cuts).
 
 ## Installation
 
-### Requires `ffmpeg`
-
-1. First, install [Homebrew](https://brew.sh). Then, in the Terminal type:
+1. Install [Homebrew](https://brew.sh)
+2. In the Terminal type:
 
 ```shell
 brew tap ericfortis/fcpscene
