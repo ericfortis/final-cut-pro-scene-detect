@@ -41,8 +41,6 @@ Or, import it from Final Cut Pro: File &rarr; Import &rarr; XML &rarr;  Select t
 
 <br>
 
----
-
 
 
 ## Or, Run the CLI

@@ -9,13 +9,13 @@ class EventBus:
     if event in self._subs:
       del self._subs[event]
 
-  def _publish(self, event, *args):
+  def _emit(self, event, *args):
     for cb in self._subs.get(event, []):
       cb(*args)
 
 
   def emit_progress(self, *args):
-    self._publish('ffmpeg.progress', *args)
+    self._emit('ffmpeg.progress', *args)
 
   def subscribe_progress(self, callback):
     self._subscribe('ffmpeg.progress', callback)
@@ -25,7 +25,7 @@ class EventBus:
 
 
   def emit_stop(self):
-    self._publish('ffmpeg.stop')
+    self._emit('ffmpeg.stop')
 
   def subscribe_stop(self, callback):
     self._subscribe('ffmpeg.stop', callback)

@@ -104,18 +104,20 @@ def detect_scene_cuts(video, video_duration, proxy_width, sensitivity, bus: Even
     '-f', 'null',  # null-muxer for discarding the processed video (we won’t write encoded binary data)
     '-'  # output to stdout (needed although the null-muxer outputs nothing)
   ]
+
   cuts = []
   stderr_buffer = []
   stopped_from_gui = False
+
   try:
     with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True) as process:
-      def on_stop():
+      def on_stop_from_gui():
         if process and process.poll() is None:
           nonlocal stopped_from_gui
           stopped_from_gui = True
           process.send_signal(signal.SIGINT)
 
-      bus.subscribe_stop(on_stop)
+      bus.subscribe_stop(on_stop_from_gui)
 
       for line in process.stderr:  # while stderr is open
         stderr_buffer.append(line)

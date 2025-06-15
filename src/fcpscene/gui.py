@@ -143,9 +143,9 @@ class GUI:
       try:
         self.running = True
         self.run_stop_button.config(text='Stop and Save')
-        out_xml = scenes_to_fcp(video, bus=self.bus, sensitivity=sensitivity)
+        xml = scenes_to_fcp(video, self.bus, sensitivity)
         self.bus.unsubscribe_progress()
-        self.root.after(0, lambda: save_file(out_xml, Path(video).with_suffix('.fcpxml').name))
+        self.root.after(0, lambda: save_file(xml, Path(video).with_suffix('.fcpxml').name))
       except Exception as e:
         messagebox.showerror('Error', f'{e}')
       finally:
@@ -155,10 +155,10 @@ class GUI:
     threading.Thread(target=run, daemon=True).start()
 
 
-def save_file(xml, initial_file):
+def save_file(xml, suggested_filename):
   file = filedialog.asksaveasfilename(
     defaultextension='.fcpxml',
-    initialfile=initial_file,
+    initialfile=suggested_filename,
     filetypes=[('Final Cut Pro XML', '*.fcpxml')]
   )
   if file:
