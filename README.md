@@ -27,6 +27,11 @@ In the Terminal app, type:
 fcpscene-gui
 ```
 
+A 15-minute 4K video takes about 1 minute to run. You’ll see the found cut times
+as it runs &mdash; if you hit "Stop and Save", you can save the Final Cut Pro
+file with the cuts found so far.
+
+
 ![](README-gui.png)
 
 ### Importing into Final Cut Pro
@@ -35,6 +40,7 @@ Double-click the generated `.fcpxml` file to import it.
 Or, import it from Final Cut Pro: File &rarr; Import &rarr; XML &rarr;  Select the generated `.fcpxml`
 
 <br>
+
 ---
 
 
