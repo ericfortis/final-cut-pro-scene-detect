@@ -2,14 +2,16 @@ import unittest
 from pathlib import Path
 
 from fcpscene.event_bus import EventBus
-from fcpscene.scenes_to_fcp import scenes_to_fcp
+from fcpscene.scenes_to_fcp import scenes_to_fcp, VIDEO_DIR_PLACEHOLDER
 
 
 class FCPScene(unittest.TestCase):
   def _test(self, video_file, expected_fcpxml):
-    fixtures = Path(__file__).parent / 'fixtures'
+    fixtures = Path(__file__).resolve().parent / 'fixtures'
+    actual = (scenes_to_fcp(fixtures / video_file, EventBus(), sensitivity=85)
+              .replace(str(fixtures), VIDEO_DIR_PLACEHOLDER))
     self.assertEqual(
-      scenes_to_fcp(fixtures / video_file, EventBus(), sensitivity=85),
+      actual,
       Path(fixtures / expected_fcpxml).read_text(encoding='utf-8'))
 
   def test_60fps(self): self._test('60fps.mp4', '60fps.fcpxml')

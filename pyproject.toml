@@ -1,6 +1,6 @@
 [project]
 name = "final-cut-pro-scene-detect"
-version = "1.0.0"
+version = "1.0.1"
 description = "Scene detection and FCPXML generator"
 authors = [{ name = "Eric Fortis" }]
 license = { text = "MIT" }
