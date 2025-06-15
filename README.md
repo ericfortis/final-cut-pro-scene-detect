@@ -17,6 +17,7 @@ For example, the timeline below has six clips (five cuts).
 1. First, install [Homebrew](https://brew.sh). Then, in the Terminal type:
 
 ```shell
+brew tap ericfortis/fcpscene
 brew install fcpscene
 ```
 
