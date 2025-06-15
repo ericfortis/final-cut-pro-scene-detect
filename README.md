@@ -13,7 +13,7 @@ For example, the timeline below has six clips (five cuts).
 ## Installation
 
 1. Install [Homebrew](https://brew.sh)
-2. In the Terminal type:
+2. In the Terminal app type:
 
 ```shell
 brew tap ericfortis/fcpscene
@@ -21,7 +21,7 @@ brew install fcpscene
 ```
 
 ## Running
-In the Terminal app, type:
+In the Terminal, type:
 
 ```shell
 fcpscene-gui
@@ -80,6 +80,11 @@ modify your original video, and the proxy version is never saved.
 ```shell
 python3 scenes_to_fcp.py --proxy-width 240 my-video.mp4
 ```
+
+<br>
+
+---
+
 
 ## License
 
