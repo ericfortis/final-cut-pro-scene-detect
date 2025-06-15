@@ -12,7 +12,6 @@ import subprocess
 from fcpscene.event_bus import EventBus
 
 PROXY_WIDTH = 320
-VIDEO_DIR_PLACEHOLDER = '__VIDEO_DIR_PLACEHOLDER__'
 
 
 def scenes_to_fcp(video, bus, sensitivity, proxy_width=PROXY_WIDTH):
@@ -93,18 +92,17 @@ def video_attr(video, attr) -> str:
 def detect_scene_cuts(video, video_duration, proxy_width, sensitivity, bus: EventBus) -> list[float]:
   cut_time_regex = re.compile(r'Parsed_metadata.*pts_time:(\d+\.?\d*)')
 
-  # ffmpeg writes the cut time (from the `metadata` filter) to stderr
   cmd = [
     'ffmpeg', '-nostats', '-hide_banner', '-an',
     '-i', video,
     '-vf', ','.join([
       f'scale={proxy_width}:-1',
-      f"select='gt(scene, {1 - sensitivity / 100})'",  # select when scene change probability is greater than `threshold`
-      'metadata=print'
+      f"select='gt(scene, {1 - sensitivity / 100})'",  # select when cut probability is greater than `threshold`
+      'metadata=print'  # outputs the scene change time to stderr
     ]),
     '-fps_mode', 'vfr',  # ensure the natural frame timing is not changed by the `scene` filter
-    '-f', 'null',  # null muxer for discarding the processed video (we won’t write the encoded binary data)
-    '-'  # output to stdout (null muxer output nothing)
+    '-f', 'null',  # null-muxer for discarding the processed video (we won’t write encoded binary data)
+    '-'  # output to stdout (needed although the null-muxer outputs nothing)
   ]
   cuts = []
   stderr_buffer = []
@@ -132,14 +130,19 @@ def detect_scene_cuts(video, video_duration, proxy_width, sensitivity, bus: Even
 
       process.wait()
       bus.emit_progress(video_duration, video_duration, len(cuts))
+
       if not user_stopped and process.returncode != 0:
         raise RuntimeError(f'\nffmpeg exited with code {process.returncode}:\n' + ''.join(stderr_buffer))
+
   except KeyboardInterrupt:  # Ctrl+C terminates analysis, and we create a file with the progress so far
     if process:
       process.terminate()
+
   except Exception as e:
     sys.stderr.write(f'\nAn unexpected error occurred during ffmpeg execution: {e}\n')
     sys.exit(1)
+
   finally:
     bus.unsubscribe_stop()
+
   return cuts

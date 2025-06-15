@@ -2,7 +2,9 @@ import unittest
 from pathlib import Path
 
 from fcpscene.event_bus import EventBus
-from fcpscene.scenes_to_fcp import scenes_to_fcp, VIDEO_DIR_PLACEHOLDER
+from fcpscene.scenes_to_fcp import scenes_to_fcp
+
+VIDEO_DIR_PLACEHOLDER = '__VIDEO_DIR_PLACEHOLDER__'
 
 
 class FCPScene(unittest.TestCase):
