@@ -106,13 +106,13 @@ def detect_scene_cuts(video, video_duration, proxy_width, sensitivity, bus: Even
   ]
   cuts = []
   stderr_buffer = []
-  user_stopped = False
+  stopped_from_gui = False
   try:
     with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True) as process:
       def on_stop():
         if process and process.poll() is None:
-          nonlocal user_stopped
-          user_stopped = True
+          nonlocal stopped_from_gui
+          stopped_from_gui = True
           process.send_signal(signal.SIGINT)
 
       bus.subscribe_stop(on_stop)
@@ -131,7 +131,7 @@ def detect_scene_cuts(video, video_duration, proxy_width, sensitivity, bus: Even
       process.wait()
       bus.emit_progress(video_duration, video_duration, len(cuts))
 
-      if not user_stopped and process.returncode != 0:
+      if not stopped_from_gui and process.returncode != 0:
         raise RuntimeError(f'\nffmpeg exited with code {process.returncode}:\n' + ''.join(stderr_buffer))
 
   except KeyboardInterrupt:  # Ctrl+C terminates analysis, and we create a file with the progress so far
