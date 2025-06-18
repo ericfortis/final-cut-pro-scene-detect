@@ -20,6 +20,16 @@ brew tap ericfortis/fcpscene
 brew install fcpscene
 ```
 
+
+## Place your video in your `Home` or `Movies` directory
+You video file should be in a directory Final Cut Pro can import from. By
+default, your `Home` and `Movies` directories are allowed. **Otherwise**, you’ll
+to need to **grant Full-Disk Access** to Final Cut Pro in order to import the
+project. For example, if your video is in your _Desktop_, or _Documents_, or any
+other TCC-protected folder, Final Cut Pro will crash when importing the `fcpxml` file.
+
+
+
 ## Running
 In the Terminal, type:
 
