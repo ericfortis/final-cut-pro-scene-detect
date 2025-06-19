@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.0.2'
+__version__ = '1.0.3'
 
 from math import ceil
 import re
@@ -50,6 +50,8 @@ def scenes_to_fcp(video, bus, sensitivity, proxy_width=PROXY_WIDTH):
 
   prev_frame = 0
   for frame in cuts:
+    if frame - prev_frame <= 1: # ignore 1-frame cuts
+      continue
     offset_ticks = prev_frame * fps_denominator
     duration_ticks = (frame - prev_frame) * fps_denominator
     xml += f'''
