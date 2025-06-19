@@ -16,7 +16,7 @@ class FCPScene(unittest.TestCase):
       actual,
       Path(fixtures / expected_fcpxml).read_text(encoding='utf-8'))
 
-  def test_60fps(self): self._test('60fps.mp4', '60fps.fcpxml')
+  def test_60fps(self): self._test('60 fps.mp4', '60fps.fcpxml')
 
   def test_2997fps(self): self._test('2997fps.mp4', '2997fps.fcpxml')
 

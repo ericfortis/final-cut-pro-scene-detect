@@ -1,4 +1,6 @@
 import sys
+from urllib.parse import quote
+from pathlib import Path
 from shutil import which
 
 
@@ -18,7 +20,11 @@ def format_seconds(seconds: float) -> str:
   return result
 
 
-def check_dependency(program):
+def check_dependency(program: str):
   if not which(program):
     sys.stderr.write(f'Missing dependency: {program}\n')
     sys.exit(1)
+
+
+def file_uri(path: str) -> str:
+  return 'file://' + quote(str(Path(path).resolve()))

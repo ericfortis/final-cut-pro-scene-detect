@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 
-from pathlib import Path
 from math import ceil
 import re
 import sys
@@ -10,12 +9,13 @@ import signal
 import subprocess
 
 from fcpscene.event_bus import EventBus
+from fcpscene.utils import file_uri
 
 PROXY_WIDTH = 320
 
 
 def scenes_to_fcp(video, bus, sensitivity, proxy_width=PROXY_WIDTH):
-  video_path = Path(video).resolve()
+  video_path = file_uri(video)
 
   width = video_attr(video, 'width')
   height = video_attr(video, 'height')
@@ -39,7 +39,7 @@ def scenes_to_fcp(video, bus, sensitivity, proxy_width=PROXY_WIDTH):
       height="{height}"
       frameDuration="{fps_denominator}/{fps_numerator}s" />
     <asset id="r2" start="0s" format="r1">
-      <media-rep kind="original-media" src="file://{video_path}"/>
+      <media-rep kind="original-media" src="{video_path}"/>
     </asset>
   </resources>
   <library>
