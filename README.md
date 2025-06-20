@@ -23,10 +23,10 @@ brew install fcpscene
 
 ## Place your video in your 📂`Home` or 📂`Movies` directory
 You video file should be in a directory Final Cut Pro can access. By default,
-your 📂`Home` and 📂`Movies` directories are allowed. **Otherwise, grant Full-Disk
-Access** to Final Cut Pro. If not, Final Cut will crash when importing the
-`fcpxml` project &mdash; for example, if your video is in your ⚠️ _Desktop_, or
-⚠️ _Documents_, or any other TCC-protected folder.
+your 📂`Home` and 📂`Movies` directories are allowed. **Otherwise, grant
+Full-Disk Access** to Final Cut Pro. If not, Final Cut will crash when importing
+the `fcpxml` project &mdash; for example, that will happen if your video is in
+your ⚠️ _Desktop_, ⚠️ _Documents_, or any other TCC-protected folder.
 
 
 
@@ -66,7 +66,7 @@ fcpscene ~/Desktop/my-video.mp4
 In that example, an `~/Desktop/my-video.fcpxml` project will
 be created. That is, in the same directory the video is in.
 
-Tip: If you don’t want to type file paths, just drag the
+Tip: If you don’t want to type the video file path, just drag the
 file into the Terminal — it will paste the path for you.
 
 
@@ -114,8 +114,31 @@ behind the scenes, which will 🔥 max out your CPU cores.
 
 <br>
 
----
 
+## Final Cut Pro Tips
+
+### Joining Clips
+In iMovie there’s (Cmd+J), but in Final Cut we don’t "join" clips, we "delete" cuts.
+
+That’s done with the Trim Tool (T). Then select both edges by clicking between
+two clips, and hit Delete.
+
+Alternatively, you can drag those two edges until they touch the adjacent clip.
+
+![](README-tip-fcp-join-clips.png)
+
+<br/>
+
+### Batch clip rename
+1. Select all the clips you want to rename.
+2. Window &rarr; Show in Workspace &rarr; Inspector (Cmd+4)
+3. Go to the ⓘ Info Inspector Tab (Ctrl+Tab)
+4. Type a name
+
+![](README-tip-fcp-batch-rename.png)
+
+
+<br>
 
 ## License
 

@@ -48,19 +48,19 @@ def scenes_to_fcp(video, bus, sensitivity, proxy_width=PROXY_WIDTH):
         <sequence format="r1" tcStart="0s">
           <spine>'''
 
-  # The clip’s [left and right] edges, `offset` and `duration`, are in timeline times.
+  # The clip’s [left and right] edges, `offset` and `offset+duration`, are in timeline times.
   # On the other hand, `start` is in video time. For our purposes, `offset=start`.
   prev_frame = 0
   for frame in cuts:
     if frame - prev_frame <= 1: # ignore 1-frame cuts
       continue
-    left_edge_ticks = prev_frame * fps_denominator
-    right_edge_ticks = (frame - prev_frame) * fps_denominator
+    offset_ticks = prev_frame * fps_denominator
+    duration_ticks = (frame - prev_frame) * fps_denominator
     xml += f'''
             <asset-clip ref="r2"
-              offset="{left_edge_ticks}/{fps_numerator}s"
-              start="{left_edge_ticks}/{fps_numerator}s"
-              duration="{right_edge_ticks}/{fps_numerator}s"/>'''
+              offset="{offset_ticks}/{fps_numerator}s"
+              start="{offset_ticks}/{fps_numerator}s"
+              duration="{duration_ticks}/{fps_numerator}s"/>'''
     prev_frame = frame
 
   xml += f'''
