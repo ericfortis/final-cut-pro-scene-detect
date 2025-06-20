@@ -15,7 +15,7 @@ from pathlib import Path
 
 from fcpscene.utils import format_seconds
 from fcpscene.event_bus import EventBus
-from fcpscene.scenes_to_fcp import scenes_to_fcp
+from fcpscene.scenes_to_fcp import scenes_to_fcp, __version__
 
 
 class GUI:
@@ -49,10 +49,20 @@ class GUI:
     def open_help():
       webbrowser.open('https://github.com/ericfortis/final-cut-pro-scene-detect')
 
+    def show_about():
+      messagebox.showinfo(
+        'About fcpscene',
+        f'fcpscene {__version__}\n\n'
+        'Dependencies: FFmpeg\n\n'
+        'Source Code\n'
+        'https://github.com/ericfortis/final-cut-pro-scene-detect'
+      )
+
     menubar = tk.Menu(self.root)
     helpmenu = tk.Menu(menubar, tearoff=0)
     helpmenu.add_command(label='README', command=open_help)
-    menubar.add_cascade(label="Help", menu=helpmenu)
+    helpmenu.add_command(label=f'About {__version__}', command=show_about)
+    menubar.add_cascade(label='Help', menu=helpmenu)
 
     self.root.config(menu=menubar)
 

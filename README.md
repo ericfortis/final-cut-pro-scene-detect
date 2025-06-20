@@ -27,11 +27,11 @@ supports batch processing.
 
 
 ## Place your video in your 📂`Home` or 📂`Movies` directory
-You video file should be in a directory Final Cut Pro can access. By default,
-your 📂`Home` and 📂`Movies` directories are allowed. **Otherwise, grant
-Full-Disk Access** to Final Cut Pro. If not, Final Cut will crash when importing
-the `fcpxml` project &mdash; for example, that will happen if your video is in
-your ⚠️ _Desktop_, ⚠️ _Documents_, or any other TCC-protected folder.
+You video file should be in a directory Final Cut Pro can access. Your 📂`Home`
+and 📂`Movies` directories are allowed by default. **Otherwise, grant Full-Disk
+Access** to Final Cut Pro. If not, Final Cut will crash when importing the
+`fcpxml` project &mdash; for example, that will happen if your video is in your
+⚠️ _Desktop_, ⚠️ _Documents_, or any other TCC-protected folder.
 
 
 
@@ -41,6 +41,7 @@ In the Terminal, launch the program by typing:
 ```shell
 fcpscene-gui
 ```
+![](README-gui.png)
 
 A 15-minute 4K 60fps video takes about 1 minute to run on a 14-core M4. You’ll
 see the found cut times as it runs &mdash; if you hit "Stop and Save", a Final
@@ -51,8 +52,6 @@ it’s missing cuts. By the way, 1-frame cuts are ignored regardless of the
 percent. Also, the sensitivity doesn’t affect speed.
 
 
-![](README-gui.png)
-
 ### Importing into Final Cut Pro
 Double-click the generated `.fcpxml` file to import it.
 
@@ -62,7 +61,7 @@ Or, import it from Final Cut Pro: File &rarr; Import &rarr; XML &rarr;  Select t
 
 
 
-## Or, Run the CLI
+## Or, Run the Command-line
 
 ```shell
 fcpscene ~/Movies/my-video.mp4
@@ -83,7 +82,7 @@ Range: 0-100, Default: **85**
 This value sets the frame difference percentage used to detect scene changes.
 
 ```shell
-python3 scenes_to_fcp.py --sensitivity 70 my-video.mp4
+fcpscene --sensitivity 70 my-video.mp4
 ```
 
 #### Proxy Width
@@ -94,14 +93,13 @@ used to scale down the video during processing. It does **not**
 modify your original video, and the proxy version is never saved.
 
 ```shell
-python3 scenes_to_fcp.py --proxy-width 240 my-video.mp4
+fcpscene --proxy-width 240 my-video.mp4
 ```
 
 ### Tip: Batch Processing
 
 In the Terminal, you can type a snippet like this to run `fcpscene` on all the
-`.mp4` videos in your top-level 📂`~/Movies` directory. In other words, this
-script will ignore videos in subdirectories.
+`.mp4` videos in your 📂`~/Movies` directory excluding subdirectories.
 
 ```shell
 cd ~/Movies
@@ -125,8 +123,8 @@ behind the scenes, which will 🔥 max out your CPU cores.
 ### Joining Clips
 In iMovie there’s (Cmd+J), but in Final Cut we don’t "join" clips, we "delete" cuts.
 
-That’s done with the Trim Tool (T). Then select both edges by clicking between
-two clips, and hit Delete.
+Pick the Trim Tool (T), and select both edges by clicking between
+two clips, and hit _Delete_.
 
 Alternatively, you can drag those two edges until they touch the adjacent clip.
 
@@ -134,7 +132,7 @@ Alternatively, you can drag those two edges until they touch the adjacent clip.
 
 <br/>
 
-### Batch clip rename
+### Batch Clip Rename
 1. Select all the clips you want to rename.
 2. Window &rarr; Show in Workspace &rarr; Inspector (Cmd+4)
 3. Go to the ⓘ Info Inspector Tab (Ctrl+Tab)

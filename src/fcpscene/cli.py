@@ -7,7 +7,10 @@ from fcpscene.scenes_to_fcp import scenes_to_fcp, PROXY_WIDTH, __version__
 
 
 def main():
-  parser = ArgumentParser(description='Generates a Final Cut Pro XML project with scene cuts from a video')
+  parser = ArgumentParser(
+    description='Generates a Final Cut Pro XML project with scene cuts from a video',
+    epilog='Powered by FFmpeg'
+  )
   parser.add_argument('-v', '--version', action='version', version=__version__)
   parser.add_argument('video', help='Path to the input video file')
   parser.add_argument('-s', '--sensitivity',
