@@ -5,11 +5,10 @@ import sys
 try:
   import tkinter as tk
 except ImportError:
-  print('❌ fcpscene-gui requires tkinter. Try using system Python or run "./bin/fcpscene-gui" locally.')
+  print('ERROR: tkinter not found')
   sys.exit(1)
 
 import threading
-import tkinter as tk
 from tkinter import filedialog, messagebox, scrolledtext, ttk
 from pathlib import Path
 

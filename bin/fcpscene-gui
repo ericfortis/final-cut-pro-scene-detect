@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
-import sys
+from sys import path, version_info
 from pathlib import Path
 
-
-# for homebrew
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "libexec/lib/python3.11/site-packages"))
+# For Homebrew, so tkinter can be found
+libexec = Path(__file__).resolve().parent.parent / 'libexec'
+site_packages = libexec / f'lib/python{version_info.major}.{version_info.minor}/site-packages'
+if site_packages.exists():
+  path.insert(0, str(site_packages))
 
 from fcpscene.gui import GUI
 

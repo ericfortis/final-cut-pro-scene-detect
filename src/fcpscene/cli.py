@@ -29,7 +29,7 @@ def main():
 
   output_file = Path(args.video).with_suffix('.fcpxml')
   Path(output_file).write_text(out_xml, encoding='utf-8')
-  print(f'\n✅  Saved file://{Path(output_file).resolve()}')
+  print(f'\n💾 file://{Path(output_file).resolve()}')
 
 
 def validate_percent(value):
