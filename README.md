@@ -20,6 +20,11 @@ brew tap ericfortis/fcpscene
 brew install fcpscene
 ```
 
+That will install two programs, they do the same thing, but the command-line one
+supports batch processing.
+- `fcpscene-gui` graphical user interface
+- `fcpscene` command-line
+
 
 ## Place your video in your 📂`Home` or 📂`Movies` directory
 You video file should be in a directory Final Cut Pro can access. By default,
@@ -60,10 +65,10 @@ Or, import it from Final Cut Pro: File &rarr; Import &rarr; XML &rarr;  Select t
 ## Or, Run the CLI
 
 ```shell
-fcpscene ~/Desktop/my-video.mp4
+fcpscene ~/Movies/my-video.mp4
 ```
 
-In that example, an `~/Desktop/my-video.fcpxml` project will
+In that example, an `~/Movies/my-video.fcpxml` project will
 be created. That is, in the same directory the video is in.
 
 Tip: If you don’t want to type the video file path, just drag the
