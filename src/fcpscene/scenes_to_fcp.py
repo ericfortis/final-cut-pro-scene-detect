@@ -98,7 +98,7 @@ def video_attr(video, attr) -> str:
 def detect_scene_cuts(video, video_duration, proxy_width, sensitivity, bus: EventBus) -> list[float]:
   cut_time_regex = re.compile(r'Parsed_metadata.*pts_time:(\d+\.?\d*)')
 
-  # ffmpeg writes the metadata we need to stderr
+  # ffmpeg’s video filters write to stderr. The metadata we need for the cut times is there.
   cmd = [
     'ffmpeg', '-nostats', '-hide_banner', '-an',
     '-i', video,
