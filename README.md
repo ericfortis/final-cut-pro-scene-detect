@@ -36,7 +36,7 @@ your ⚠️ _Desktop_, ⚠️ _Documents_, or any other TCC-protected folder.
 
 
 ## Running
-In the Terminal, type:
+In the Terminal, launch the program by typing:
 
 ```shell
 fcpscene-gui
