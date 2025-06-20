@@ -3,9 +3,9 @@
 __version__ = '1.0.5'
 
 from math import ceil
+from signal import SIGINT
 import re
 import sys
-import signal
 import subprocess
 
 from fcpscene.event_bus import EventBus
@@ -74,6 +74,7 @@ def scenes_to_fcp(video, bus, sensitivity, proxy_width=PROXY_WIDTH):
   return xml
 
 
+
 def video_attr(video, attr) -> str:
   cmd = [
     'ffprobe', '-hide_banner',
@@ -93,16 +94,18 @@ def video_attr(video, attr) -> str:
     sys.exit(1)
 
 
+
 def detect_scene_cuts(video, video_duration, proxy_width, sensitivity, bus: EventBus) -> list[float]:
   cut_time_regex = re.compile(r'Parsed_metadata.*pts_time:(\d+\.?\d*)')
 
+  # ffmpeg writes the metadata we need to stderr
   cmd = [
     'ffmpeg', '-nostats', '-hide_banner', '-an',
     '-i', video,
     '-vf', ','.join([
       f'scale={proxy_width}:-1',
       f"select='gt(scene, {1 - sensitivity / 100})'",  # select when cut probability is greater than `threshold`
-      'metadata=print'  # outputs the scene change time to stderr
+      'metadata=print'
     ]),
     '-fps_mode', 'vfr',  # ensure the natural frame timing is not changed by the `scene` filter
     '-f', 'null',  # null-muxer for discarding the processed video (we won’t write encoded binary data)
@@ -119,7 +122,7 @@ def detect_scene_cuts(video, video_duration, proxy_width, sensitivity, bus: Even
         if process and process.poll() is None:
           nonlocal stopped_from_gui
           stopped_from_gui = True
-          process.send_signal(signal.SIGINT)
+          process.send_signal(SIGINT)
 
       bus.subscribe_stop(on_stop_from_gui)
 
