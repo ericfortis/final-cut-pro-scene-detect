@@ -53,7 +53,7 @@ class GUI:
       messagebox.showinfo(
         'About fcpscene',
         f'fcpscene {__version__}\n\n'
-        'Dependencies: FFmpeg\n\n'
+        'Powered by FFmpeg\n\n'
         'Source Code\n'
         'https://github.com/ericfortis/final-cut-pro-scene-detect'
       )

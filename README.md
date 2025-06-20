@@ -27,11 +27,11 @@ supports batch processing.
 
 
 ## Place your video in your 📂`Home` or 📂`Movies` directory
-You video file should be in a directory Final Cut Pro can access. Your 📂`Home`
-and 📂`Movies` directories are allowed by default. **Otherwise, grant Full-Disk
-Access** to Final Cut Pro. If not, Final Cut will crash when importing the
-`fcpxml` project &mdash; for example, that will happen if your video is in your
-⚠️ _Desktop_, ⚠️ _Documents_, or any other TCC-protected folder.
+You video file should be in a directory Final Cut Pro can access &mdash; your
+📂`Home` and 📂`Movies` directories are allowed by default. **Otherwise, grant
+Full-Disk Access** to Final Cut Pro. If not, Final Cut will crash when importing
+the `fcpxml` project &mdash; for example, that will happen if your video is in
+your ⚠️ _Desktop_, ⚠️ _Documents_, or any other TCC-protected folder.
 
 
 
