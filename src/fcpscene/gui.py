@@ -9,6 +9,7 @@ except ImportError:
   sys.exit(1)
 
 import threading
+import webbrowser
 from tkinter import filedialog, messagebox, scrolledtext, ttk
 from pathlib import Path
 
@@ -33,12 +34,25 @@ class GUI:
 
     self.root.title('Final Cut Pro Scene Detect')
     self.root.resizable(False, False)
+    self.setup_menus()
 
     self.render_video_picker()
     self.render_sensitivity_slider()
     self.render_run_stop_button()
     self.render_progress_bar()
     self.render_cuts_list()
+
+
+  def setup_menus(self):
+    def open_help():
+      webbrowser.open('https://github.com/ericfortis/final-cut-pro-scene-detect')
+
+    menubar = tk.Menu(self.root)
+    helpmenu = tk.Menu(menubar, tearoff=0)
+    helpmenu.add_command(label='README', command=open_help)
+    menubar.add_cascade(label="Help", menu=helpmenu)
+
+    self.root.config(menu=menubar)
 
 
   def render_video_picker(self):
