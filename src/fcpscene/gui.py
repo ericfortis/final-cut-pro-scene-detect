@@ -34,6 +34,8 @@ class GUI:
 
     self.root.title('Final Cut Pro Scene Detect')
     self.root.resizable(False, False)
+    self.last_browsed_dir = str(Path.home() / 'Movies')
+
     self.setup_menus()
 
     self.render_video_picker()
@@ -62,11 +64,15 @@ class GUI:
     ttk.Button(self.root, text='Browse', command=self.browse_file).grid(row=0, column=2, padx=(0, 10), pady=(10, 0))
 
   def browse_file(self):
-    file_path = filedialog.askopenfilename(filetypes=[
+    file_path = filedialog.askopenfilename(
+      title='Select Video File',
+      initialdir=self.last_browsed_dir,
+      filetypes=[
       ('Final Cut Pro-Compatible Files', '*.mp4 *.mov *.avi *.m4v *.3gp *.3g2 *.mts *.m2ts *.mxf'),
       ('All files', '*.*')
     ])
     if file_path:
+      self.last_browsed_dir = str(Path(file_path).parent)
       self.video_entry.delete(0, tk.END)
       self.video_entry.insert(0, file_path)
 
