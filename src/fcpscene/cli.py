@@ -1,26 +1,27 @@
 from pathlib import Path
-from argparse import ArgumentParser, ArgumentTypeError
+from argparse import ArgumentParser, ArgumentTypeError, RawDescriptionHelpFormatter
 
+from fcpscene import __version__, __repo_url__
 from fcpscene.utils import check_dependency
 from fcpscene.event_bus import EventBus
-from fcpscene.scenes_to_fcp import scenes_to_fcp, PROXY_WIDTH, __version__
+from fcpscene.scenes_to_fcp import scenes_to_fcp, PROXY_WIDTH
 
 
 def main():
   parser = ArgumentParser(
     description='Generates a Final Cut Pro XML project with scene cuts from a video',
-    epilog='Powered by FFmpeg'
-  )
-  parser.add_argument('-v', '--version', action='version', version=__version__)
+    epilog=f'Source Code:\n{__repo_url__}\n\nPowered by FFmpeg',
+    formatter_class=RawDescriptionHelpFormatter)
   parser.add_argument('video', help='Path to the input video file')
+  parser.add_argument('-v', '--version', action='version', version=__version__)
   parser.add_argument('-s', '--sensitivity',
                       type=validate_percent,
                       default=85,
-                      help='Frame difference percent for detecting scene changes. (0-100, default: %(default)s)')
+                      help='(0-100, default: %(default)s) frame difference percent for detecting scene changes')
   parser.add_argument('-w', '--proxy-width',
                       type=int,
                       default=PROXY_WIDTH,
-                      help='Width of scaled video used for speeding up analysis (default: %(default)s)')
+                      help=' (default: %(default)s) width of scaled video used for speeding up analysis')
   args = parser.parse_args()
 
   check_dependency('ffmpeg')

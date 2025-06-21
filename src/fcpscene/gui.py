@@ -13,9 +13,10 @@ import webbrowser
 from tkinter import filedialog, messagebox, scrolledtext, ttk
 from pathlib import Path
 
+from fcpscene import __version__, __repo_url__
 from fcpscene.utils import format_seconds
 from fcpscene.event_bus import EventBus
-from fcpscene.scenes_to_fcp import scenes_to_fcp, __version__
+from fcpscene.scenes_to_fcp import scenes_to_fcp
 
 
 class GUI:
@@ -47,15 +48,15 @@ class GUI:
 
   def setup_menus(self):
     def open_help():
-      webbrowser.open('https://github.com/ericfortis/final-cut-pro-scene-detect')
+      webbrowser.open(__repo_url__)
 
     def show_about():
       messagebox.showinfo(
         'About fcpscene',
         f'fcpscene {__version__}\n\n'
-        'Powered by FFmpeg\n\n'
         'Source Code\n'
-        'https://github.com/ericfortis/final-cut-pro-scene-detect'
+        f'{__repo_url__}\n\n'
+        'Powered by FFmpeg'
       )
 
     menubar = tk.Menu(self.root)

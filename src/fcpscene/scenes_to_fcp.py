@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 
-__version__ = '1.0.6'
-
 from math import ceil
 from signal import SIGINT
 import re
 import sys
 import subprocess
 
-from fcpscene.event_bus import EventBus
 from fcpscene.utils import file_uri
+from fcpscene.event_bus import EventBus
 
 PROXY_WIDTH = 320
 
