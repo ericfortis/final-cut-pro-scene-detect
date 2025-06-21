@@ -14,7 +14,7 @@ PROXY_WIDTH = 320
 
 
 def scenes_to_fcp(v: VideoAttr, bus: EventBus, sensitivity, proxy_width=PROXY_WIDTH) -> str:
-  cuts = detect_scene_cuts(v.video_path, v.duration, bus, sensitivity, proxy_width)
+  cuts = detect_scene_cuts(v.path, v.duration, bus, sensitivity, proxy_width)
   cuts.append(v.duration)
   cuts = [ceil(t * v.fps) for t in cuts]  # seconds to frames
 
@@ -28,7 +28,7 @@ def scenes_to_fcp(v: VideoAttr, bus: EventBus, sensitivity, proxy_width=PROXY_WI
       height="{v.height}"
       frameDuration="{v.fps_denominator}/{v.fps_numerator}s" />
     <asset id="r2" start="0s" format="r1">
-      <media-rep kind="original-media" src="{file_uri(v.video_path)}"/>
+      <media-rep kind="original-media" src="{file_uri(v.path)}"/>
     </asset>
   </resources>
   <library>

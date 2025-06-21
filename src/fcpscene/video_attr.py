@@ -6,7 +6,7 @@ from fcpscene.utils import format_seconds, clean_decimals
 class VideoAttr:
   def __init__(self, video_path: str):
     self._runtime_error = ''
-    self.video_path = video_path
+    self.path = video_path
     self.is_video = self.get('codec_type') == 'video'
     if self.is_video:
       self.width = self.get('width')
@@ -41,7 +41,7 @@ class VideoAttr:
       '-select_streams', 'v:0',
       '-show_entries', f'stream={attr}',
       '-of', 'csv=p=0',
-      self.video_path
+      self.path
     ]
     try:
       return subprocess.check_output(cmd, stderr=subprocess.PIPE).decode('utf-8').strip()
