@@ -36,7 +36,7 @@ class GUI:
 
     self.root.title(__title__)
     self.root.resizable(False, False)
-    self.last_browsed_dir = str(Path.home() / 'Movies')
+    self.initial_dir = str(Path.home() / 'Movies')
 
     self.setup_menus()
 
@@ -77,13 +77,13 @@ class GUI:
   def browse_file(self):
     file_path = filedialog.askopenfilename(
       title='Select Video File',
-      initialdir=self.last_browsed_dir,
+      initialdir=self.initial_dir,
       filetypes=[
       ('Final Cut Pro-Compatible Files', '*.mp4 *.mov *.avi *.m4v *.3gp *.3g2 *.mts *.m2ts *.mxf'),
       ('All files', '*.*')
     ])
     if file_path:
-      self.last_browsed_dir = str(Path(file_path).parent)
+      self.initial_dir = str(Path(file_path).parent)
       self.video_entry.delete(0, tk.END)
       self.video_entry.insert(0, file_path)
 
