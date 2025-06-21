@@ -1,7 +1,7 @@
 from pathlib import Path
 from argparse import ArgumentParser, ArgumentTypeError, RawDescriptionHelpFormatter
 
-from fcpscene import __version__, __repo_url__
+from fcpscene import __version__, __repo_url__, __description__
 from fcpscene.utils import check_dependency
 from fcpscene.event_bus import EventBus
 from fcpscene.scenes_to_fcp import scenes_to_fcp, PROXY_WIDTH
@@ -9,7 +9,7 @@ from fcpscene.scenes_to_fcp import scenes_to_fcp, PROXY_WIDTH
 
 def main():
   parser = ArgumentParser(
-    description='Generates a Final Cut Pro XML project with scene cuts from a video',
+    description=__description__,
     epilog=f'Source Code:\n{__repo_url__}\n\nPowered by FFmpeg',
     formatter_class=RawDescriptionHelpFormatter)
   parser.add_argument('video', help='Path to the input video file')

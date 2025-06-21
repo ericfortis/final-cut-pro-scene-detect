@@ -1,7 +1,7 @@
 [project]
 name = "final-cut-pro-scene-detect"
 version = "1.0.6"
-description = "Scene detection and FCPXML generator"
+description = "Generates a Final Cut Pro XML project with scene cuts from a video"
 authors = [{ name = "Eric Fortis" }]
 license = { text = "MIT" }
 requires-python = ">=3.13"

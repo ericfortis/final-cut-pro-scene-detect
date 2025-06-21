@@ -13,7 +13,7 @@ import webbrowser
 from tkinter import filedialog, messagebox, scrolledtext, ttk
 from pathlib import Path
 
-from fcpscene import __version__, __repo_url__
+from fcpscene import __version__, __repo_url__, __title__
 from fcpscene.utils import format_seconds
 from fcpscene.event_bus import EventBus
 from fcpscene.scenes_to_fcp import scenes_to_fcp
@@ -33,7 +33,7 @@ class GUI:
 
     self.running = False
 
-    self.root.title('Final Cut Pro Scene Detect')
+    self.root.title(__title__)
     self.root.resizable(False, False)
     self.last_browsed_dir = str(Path.home() / 'Movies')
 
@@ -56,8 +56,7 @@ class GUI:
         f'fcpscene {__version__}\n\n'
         'Source Code\n'
         f'{__repo_url__}\n\n'
-        'Powered by FFmpeg'
-      )
+        'Powered by FFmpeg')
 
     menubar = tk.Menu(self.root)
     helpmenu = tk.Menu(menubar, tearoff=0)
