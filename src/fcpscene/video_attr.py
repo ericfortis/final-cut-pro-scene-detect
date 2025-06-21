@@ -36,7 +36,7 @@ class VideoAttr:
 
   def get(self, attr) -> str:
     cmd = [
-      'ffprobe', '-hide_banner',
+      'ffprobe',
       '-v', 'error',
       '-select_streams', 'v:0',
       '-show_entries', f'stream={attr}',

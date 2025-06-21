@@ -2,9 +2,9 @@
 
 from math import ceil
 from signal import SIGINT
+from subprocess import Popen, PIPE
 import re
 import sys
-import subprocess
 
 from fcpscene.utils import file_uri
 from fcpscene.event_bus import EventBus
@@ -86,7 +86,7 @@ def detect_scene_cuts(video, video_duration, proxy_width, sensitivity, bus: Even
   stopped_from_gui = False
 
   try:
-    with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True) as process:
+    with Popen(cmd, stdout=PIPE, stderr=PIPE, text=True) as process:
       def on_stop_from_gui():
         if process and process.poll() is None:
           nonlocal stopped_from_gui
