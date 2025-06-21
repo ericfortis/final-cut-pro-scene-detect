@@ -13,8 +13,8 @@ from fcpscene.video_attr import VideoAttr
 PROXY_WIDTH = 320
 
 
-def scenes_to_fcp(v: VideoAttr, bus, sensitivity, proxy_width=PROXY_WIDTH):
-  cuts = detect_scene_cuts(v.video_path, v.duration, proxy_width, sensitivity, bus)
+def scenes_to_fcp(v: VideoAttr, bus: EventBus, sensitivity, proxy_width=PROXY_WIDTH) -> str:
+  cuts = detect_scene_cuts(v.video_path, v.duration, bus, sensitivity, proxy_width)
   cuts.append(v.duration)
   cuts = [ceil(t * v.fps) for t in cuts]  # seconds to frames
 
@@ -41,7 +41,7 @@ def scenes_to_fcp(v: VideoAttr, bus, sensitivity, proxy_width=PROXY_WIDTH):
   # On the other hand, `start` is in video time. For our purposes, `offset=start`.
   prev_frame = 0
   for frame in cuts:
-    if frame - prev_frame <= 1: # ignore 1-frame cuts
+    if frame - prev_frame <= 1:  # ignore 1-frame cuts
       continue
     offset_ticks = prev_frame * v.fps_denominator
     duration_ticks = (frame - prev_frame) * v.fps_denominator
@@ -63,8 +63,7 @@ def scenes_to_fcp(v: VideoAttr, bus, sensitivity, proxy_width=PROXY_WIDTH):
   return xml
 
 
-
-def detect_scene_cuts(video, video_duration, proxy_width, sensitivity, bus: EventBus) -> list[float]:
+def detect_scene_cuts(video, video_duration, bus: EventBus, sensitivity, proxy_width) -> list[float]:
   cut_time_regex = re.compile(r'Parsed_metadata.*pts_time:(\d+\.?\d*)')
 
   # ffmpeg’s video filters write to stderr. The metadata we need for the cut times is there.
@@ -115,11 +114,9 @@ def detect_scene_cuts(video, video_duration, proxy_width, sensitivity, bus: Even
   except KeyboardInterrupt:  # Ctrl+C terminates analysis, and we create a file with the progress so far
     if process:
       process.terminate()
-
   except Exception as e:
     sys.stderr.write(f'\nAn unexpected error occurred during ffmpeg execution: {e}\n')
     sys.exit(1)
-
   finally:
     bus.unsubscribe_stop()
 
