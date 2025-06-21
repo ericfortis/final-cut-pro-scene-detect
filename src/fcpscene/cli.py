@@ -1,8 +1,10 @@
+import sys
 from pathlib import Path
 from argparse import ArgumentParser, ArgumentTypeError, RawDescriptionHelpFormatter
 
 from fcpscene import __version__, __repo_url__, __description__
 from fcpscene.utils import check_dependency
+from fcpscene.video_attr import VideoAttr
 from fcpscene.event_bus import EventBus
 from fcpscene.scenes_to_fcp import scenes_to_fcp, PROXY_WIDTH
 
@@ -27,9 +29,15 @@ def main():
   check_dependency('ffmpeg')
   check_dependency('ffprobe')
 
+  v = VideoAttr(args.video)
+
+  if v.get_error():
+    sys.stderr.write(f'\nERROR: {v.get_error()}\n')
+    sys.exit(1)
+
   bus = EventBus()
   bus.subscribe_progress(print_progress)
-  out_xml = scenes_to_fcp(args.video, bus, args.sensitivity, args.proxy_width)
+  out_xml = scenes_to_fcp(v, bus, args.sensitivity, args.proxy_width)
 
   output_file = Path(args.video).with_suffix('.fcpxml')
   Path(output_file).write_text(out_xml, encoding='utf-8')

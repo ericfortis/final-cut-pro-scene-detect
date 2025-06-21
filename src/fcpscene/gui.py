@@ -15,6 +15,7 @@ from pathlib import Path
 
 from fcpscene import __version__, __repo_url__, __title__
 from fcpscene.utils import format_seconds
+from fcpscene.video_attr import VideoAttr
 from fcpscene.event_bus import EventBus
 from fcpscene.scenes_to_fcp import scenes_to_fcp
 
@@ -160,11 +161,15 @@ class GUI:
       messagebox.showinfo('No file', 'Please select a video file.')
       return
 
+    v = VideoAttr(video)
+    if v.get_error():
+      messagebox.showerror('Error', v.get_error())
+      return
+
     sensitivity = float(self.sensitivity_val.get())
 
     self.log_box.delete(1.0, tk.END)
     self.set_progress(0, 0)
-
     self.bus.subscribe_progress(
       lambda *args: self.root.after(0, lambda: self.update_cuts_list(*args)))
 
@@ -172,7 +177,7 @@ class GUI:
       try:
         self.running = True
         self.run_stop_button.config(text='Stop and Save')
-        xml = scenes_to_fcp(video, self.bus, sensitivity)
+        xml = scenes_to_fcp(v, self.bus, sensitivity)
         self.bus.unsubscribe_progress()
         self.root.after(0, lambda: save_file(xml, Path(video).with_suffix('.fcpxml').name))
       except Exception as e:

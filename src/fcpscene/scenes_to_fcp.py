@@ -8,24 +8,15 @@ import subprocess
 
 from fcpscene.utils import file_uri
 from fcpscene.event_bus import EventBus
+from fcpscene.video_attr import VideoAttr
 
 PROXY_WIDTH = 320
 
 
-def scenes_to_fcp(video, bus, sensitivity, proxy_width=PROXY_WIDTH):
-  video_path = file_uri(video)
-
-  width = video_attr(video, 'width')
-  height = video_attr(video, 'height')
-  duration = float(video_attr(video, 'duration'))
-  r_frame_rate = video_attr(video, 'r_frame_rate')  # real base e.g. '60/1', or '30000/1001' = 29.97
-
-  fps_numerator, fps_denominator = map(int, r_frame_rate.split('/'))
-  fps = fps_numerator / fps_denominator
-
-  cuts = detect_scene_cuts(video, duration, proxy_width, sensitivity, bus)
-  cuts.append(duration)
-  cuts = [ceil(t * fps) for t in cuts]  # seconds to frames
+def scenes_to_fcp(v: VideoAttr, bus, sensitivity, proxy_width=PROXY_WIDTH):
+  cuts = detect_scene_cuts(v.video_path, v.duration, proxy_width, sensitivity, bus)
+  cuts.append(v.duration)
+  cuts = [ceil(t * v.fps) for t in cuts]  # seconds to frames
 
   xml = f'''<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE fcpxml>
@@ -33,11 +24,11 @@ def scenes_to_fcp(video, bus, sensitivity, proxy_width=PROXY_WIDTH):
   <resources>
     <!-- Dummy `name` avoids import warnings https://github.com/OpenTimelineIO/otio-fcpx-xml-adapter/issues/6 -->
     <format id="r1" name="FFVideoFormat720p24"
-      width="{width}"
-      height="{height}"
-      frameDuration="{fps_denominator}/{fps_numerator}s" />
+      width="{v.width}"
+      height="{v.height}"
+      frameDuration="{v.fps_denominator}/{v.fps_numerator}s" />
     <asset id="r2" start="0s" format="r1">
-      <media-rep kind="original-media" src="{video_path}"/>
+      <media-rep kind="original-media" src="{file_uri(v.video_path)}"/>
     </asset>
   </resources>
   <library>
@@ -52,13 +43,13 @@ def scenes_to_fcp(video, bus, sensitivity, proxy_width=PROXY_WIDTH):
   for frame in cuts:
     if frame - prev_frame <= 1: # ignore 1-frame cuts
       continue
-    offset_ticks = prev_frame * fps_denominator
-    duration_ticks = (frame - prev_frame) * fps_denominator
+    offset_ticks = prev_frame * v.fps_denominator
+    duration_ticks = (frame - prev_frame) * v.fps_denominator
     xml += f'''
             <asset-clip ref="r2"
-              offset="{offset_ticks}/{fps_numerator}s"
-              start="{offset_ticks}/{fps_numerator}s"
-              duration="{duration_ticks}/{fps_numerator}s"/>'''
+              offset="{offset_ticks}/{v.fps_numerator}s"
+              start="{offset_ticks}/{v.fps_numerator}s"
+              duration="{duration_ticks}/{v.fps_numerator}s"/>'''
     prev_frame = frame
 
   xml += f'''
@@ -70,26 +61,6 @@ def scenes_to_fcp(video, bus, sensitivity, proxy_width=PROXY_WIDTH):
 </fcpxml>
 '''
   return xml
-
-
-
-def video_attr(video, attr) -> str:
-  cmd = [
-    'ffprobe', '-hide_banner',
-    '-v', 'error',
-    '-select_streams', 'v:0',
-    '-show_entries', f'stream={attr}',
-    '-of', 'csv=p=0',
-    video
-  ]
-  try:
-    return subprocess.run(cmd, capture_output=True, text=True, check=True).stdout.strip()
-  except subprocess.CalledProcessError as e:
-    sys.stderr.write(f'\nERROR: {e.stderr.strip()}\n')
-    sys.exit(1)
-  except Exception as e:
-    sys.stderr.write(f'\nAn unexpected error occurred during ffprobe execution: {e}\n')
-    sys.exit(1)
 
 
 
