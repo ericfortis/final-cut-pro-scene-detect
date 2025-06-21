@@ -169,6 +169,7 @@ class GUI:
     sensitivity = float(self.sensitivity_val.get())
 
     self.log_box.delete(1.0, tk.END)
+    self.log_box.insert(tk.END, f'{v.summary()}\n')
     self.set_progress(0, 0)
     self.bus.subscribe_progress(
       lambda *args: self.root.after(0, lambda: self.update_cuts_list(*args)))

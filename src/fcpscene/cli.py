@@ -35,6 +35,8 @@ def main():
     sys.stderr.write(f'\nERROR: {v.get_error()}\n')
     sys.exit(1)
 
+  print(v.summary())
+
   bus = EventBus()
   bus.subscribe_progress(print_progress)
   out_xml = scenes_to_fcp(v, bus, args.sensitivity, args.proxy_width)

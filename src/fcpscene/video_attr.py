@@ -1,5 +1,7 @@
 import subprocess
 
+from fcpscene.utils import format_seconds, clean_decimals
+
 
 class VideoAttr:
   def __init__(self, video_path: str):
@@ -7,9 +9,10 @@ class VideoAttr:
     self.video_path = video_path
     self.is_video = self.get('codec_type') == 'video'
     if self.is_video:
-      self.width = int(self.get('width'))
-      self.height = int(self.get('height'))
+      self.width = self.get('width')
+      self.height = self.get('height')
       self.duration = float(self.get('duration'))
+      self.codec_name = self.get('codec_name')
 
       r_frame_rate = self.get('r_frame_rate')  # real base e.g. '60/1', or '30000/1001' = 29.97
       fps_numerator, fps_denominator = map(int, r_frame_rate.split('/'))
@@ -22,6 +25,14 @@ class VideoAttr:
     if not self.is_video: return 'Invalid video file'
     if self.duration <= 0: return 'Cannot process video with zero or unknown duration'
     return ''
+
+  def summary(self) -> str:
+    return ' '.join([
+      f'{self.width}x{self.height}',
+      f'{clean_decimals(f'{self.fps:.2f}')}fps',
+      self.codec_name,
+      f'(Video Duration: {format_seconds(self.duration)})'
+    ])
 
   def get(self, attr) -> str:
     cmd = [

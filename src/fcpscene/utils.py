@@ -15,10 +15,12 @@ def format_seconds(seconds: float) -> str:
   if minutes:
     result += f'{minutes}m'
   if partial_seconds or not result:
-    s = f'{partial_seconds:.2f}'.rstrip('0').rstrip('.')
-    result += f'{s}s'
+    result += f'{clean_decimals(f'{partial_seconds:.2f}')}s'
   return result
 
+
+def clean_decimals(number) -> str:
+  return str(number).rstrip('0').rstrip('.')
 
 def check_dependency(program: str):
   if not which(program):
