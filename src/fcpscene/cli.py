@@ -1,7 +1,6 @@
+from pathlib import Path
 import argparse
 import sys
-from pathlib import Path
-from argparse import ArgumentParser, ArgumentTypeError, RawDescriptionHelpFormatter
 
 from fcpscene import __version__, __repo_url__, __description__
 from fcpscene.utils import check_dependency
@@ -14,10 +13,10 @@ def main():
   check_dependency('ffmpeg')
   check_dependency('ffprobe')
 
-  parser = ArgumentParser(
+  parser = argparse.ArgumentParser(
     description=__description__,
     epilog=f'Source Code: {__repo_url__}\nPowered by FFmpeg',
-    formatter_class=RawDescriptionHelpFormatter)
+    formatter_class=argparse.RawDescriptionHelpFormatter)
 
   parser.add_argument('video', help='Path to the input video file')
 
@@ -71,7 +70,7 @@ def main():
 def validate_percent(value):
   f = float(value)
   if not (0 <= f <= 100):
-    raise ArgumentTypeError('Must be between 0 and 100')
+    raise argparse.ArgumentTypeError('Must be between 0 and 100')
   return f
 
 
