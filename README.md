@@ -57,6 +57,8 @@ Double-click the generated `.fcpxml` file to import it.
 
 Or, import it from Final Cut Pro: File &rarr; Import &rarr; XML &rarr;  Select the generated `.fcpxml`
 
+After importing, you can delete the `.fcpxml`
+
 <br>
 
 
@@ -75,6 +77,12 @@ file into the Terminal — it will paste the path for you.
 
 
 ### Options
+#### Output filename
+Default: `<video-dir>/<video-name>.fcpxml`
+
+```shell
+fcpscene my-video.mp4 --output my-project.fcpxml
+```
 
 #### Sensitivity
 Range: 0-100, Default: **85**

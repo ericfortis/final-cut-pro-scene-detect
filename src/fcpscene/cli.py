@@ -36,9 +36,12 @@ def main():
     default=PROXY_WIDTH,
     help=' (default: %(default)s) width of scaled video used for speeding up analysis')
   parser.add_argument(
+    '-o', '--output',
+    help='(default: <video-dir>/<video-name>.fcpxml) Name of the output .fcpxml')
+  parser.add_argument(
     '-q', '--quiet',
     help='Suppress printing video info, progress, and output file name',
-    action=argparse.BooleanOptionalAction)
+    action='store_true')
 
   args = parser.parse_args()
 
@@ -54,7 +57,7 @@ def main():
     bus.subscribe_progress(print_progress)
 
   out_xml = scenes_to_fcp(v, bus, args.sensitivity, args.proxy_width)
-  output_file = Path(args.video).with_suffix('.fcpxml')
+  output_file = args.output or Path(args.video).with_suffix('.fcpxml')
   Path(output_file).write_text(out_xml, encoding='utf-8')
 
   if not args.quiet:
