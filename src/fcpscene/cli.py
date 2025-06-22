@@ -1,3 +1,4 @@
+import argparse
 import sys
 from pathlib import Path
 from argparse import ArgumentParser, ArgumentTypeError, RawDescriptionHelpFormatter
@@ -34,6 +35,10 @@ def main():
     type=int,
     default=PROXY_WIDTH,
     help=' (default: %(default)s) width of scaled video used for speeding up analysis')
+  parser.add_argument(
+    '-q', '--quiet',
+    help='Suppress printing video info, progress, and output file name',
+    action=argparse.BooleanOptionalAction)
 
   args = parser.parse_args()
 
@@ -42,15 +47,18 @@ def main():
     sys.stderr.write(f'\nERROR: {v.get_error()}\n')
     sys.exit(1)
 
-  print(v.summary())
-
   bus = EventBus()
-  bus.subscribe_progress(print_progress)
-  out_xml = scenes_to_fcp(v, bus, args.sensitivity, args.proxy_width)
 
+  if not args.quiet:
+    print(v.summary())
+    bus.subscribe_progress(print_progress)
+
+  out_xml = scenes_to_fcp(v, bus, args.sensitivity, args.proxy_width)
   output_file = Path(args.video).with_suffix('.fcpxml')
   Path(output_file).write_text(out_xml, encoding='utf-8')
-  print(f'\n💾 file://{Path(output_file).resolve()}')
+
+  if not args.quiet:
+    print(f'\n💾 file://{Path(output_file).resolve()}')
 
 
 def validate_percent(value):
