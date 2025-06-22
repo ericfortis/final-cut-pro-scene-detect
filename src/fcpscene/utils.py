@@ -22,6 +22,7 @@ def format_seconds(seconds: float) -> str:
 def clean_decimals(number) -> str:
   return str(number).rstrip('0').rstrip('.')
 
+
 def check_dependency(program: str):
   if not which(program):
     sys.stderr.write(f'Missing dependency: {program}\n')

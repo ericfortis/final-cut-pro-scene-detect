@@ -10,27 +10,34 @@ from fcpscene.scenes_to_fcp import scenes_to_fcp, PROXY_WIDTH
 
 
 def main():
-  parser = ArgumentParser(
-    description=__description__,
-    epilog=f'Source Code:\n{__repo_url__}\n\nPowered by FFmpeg',
-    formatter_class=RawDescriptionHelpFormatter)
-  parser.add_argument('video', help='Path to the input video file')
-  parser.add_argument('-v', '--version', action='version', version=__version__)
-  parser.add_argument('-s', '--sensitivity',
-                      type=validate_percent,
-                      default=85,
-                      help='(0-100, default: %(default)s) frame difference percent for detecting scene changes')
-  parser.add_argument('-w', '--proxy-width',
-                      type=int,
-                      default=PROXY_WIDTH,
-                      help=' (default: %(default)s) width of scaled video used for speeding up analysis')
-  args = parser.parse_args()
-
   check_dependency('ffmpeg')
   check_dependency('ffprobe')
 
-  v = VideoAttr(args.video)
+  parser = ArgumentParser(
+    description=__description__,
+    epilog=f'Source Code: {__repo_url__}\nPowered by FFmpeg',
+    formatter_class=RawDescriptionHelpFormatter)
 
+  parser.add_argument('video', help='Path to the input video file')
+
+  parser.add_argument(
+    '-v', '--version',
+    action='version',
+    version=__version__)
+  parser.add_argument(
+    '-s', '--sensitivity',
+    type=validate_percent,
+    default=85,
+    help='(0-100, default: %(default)s) frame difference percent for detecting scene changes')
+  parser.add_argument(
+    '-w', '--proxy-width',
+    type=int,
+    default=PROXY_WIDTH,
+    help=' (default: %(default)s) width of scaled video used for speeding up analysis')
+
+  args = parser.parse_args()
+
+  v = VideoAttr(args.video)
   if v.get_error():
     sys.stderr.write(f'\nERROR: {v.get_error()}\n')
     sys.exit(1)
