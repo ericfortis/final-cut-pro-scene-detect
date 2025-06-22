@@ -58,10 +58,14 @@ def main():
 
   out_xml = scenes_to_fcp(v, bus, args.sensitivity, args.proxy_width)
   output_file = args.output or Path(args.video).with_suffix('.fcpxml')
-  Path(output_file).write_text(out_xml, encoding='utf-8')
 
-  if not args.quiet:
-    print(f'\n💾 file://{Path(output_file).resolve()}')
+  try:
+    Path(output_file).write_text(out_xml, encoding='utf-8')
+    if not args.quiet:
+      print(f'\n💾 file://{Path(output_file).resolve()}')
+  except (OSError, IOError) as e:
+    sys.stderr.write(f'\nERROR: Failed to save to {output_file}: {e}')
+    sys.exit(1)
 
 
 def validate_percent(value):
