@@ -1,12 +1,29 @@
 # Final Cut Pro Scene Detector (fcpscene)
 
-This program detects scene changes in videos and generates a Final Cut
-Pro project file (FCPXML) with a timeline "bladed" at the scene changes.
-
-For example, the timeline below has six clips (five cuts).
+This program detects scene changes in videos and generates a Final Cut Pro
+project file (FCPXML) with a timeline "bladed" at the scene changes. For
+example, the timeline below has six clips (five cuts).
 
 ![](./README-example.jpg)
 
+
+## Alternative Tools
+
+#### Davinci Resolve Studio
+In Davinci Resolve Studio, the paid version, you can run scene detection and export to Final Cut Pro.
+
+#### Different Approach
+Instead of cutting the timeline, there are many tools that spit the video into small videos.
+
+<details>
+<summary><b>Kdenlive</b> (for programmers)</summary>
+
+**Caveats**: There are many 1-frame off cuts due to rounding errors. Especially in non-integer frame rates such as 29.97
+- Drop the video into the Project Bin &rarr; Right-click &rarr; Clip Jobs &rarr; Automatic Scene Split
+- Expand the video on the Project Bin &rarr; Select all sequences &rarr; Drop them to the timeline
+- File &rarr; OpenTimelineIO Export
+- Convert the `.otio` to `.fcpxml` with [this Python adapter](https://github.com/OpenTimelineIO/otio-fcpx-xml-adapter)
+</details>
 
 <br>
 
@@ -20,8 +37,8 @@ brew tap ericfortis/fcpscene
 brew install fcpscene
 ```
 
-That will install two programs, they do the same thing, but the command-line one
-supports batch processing.
+That will install two programs. They do the same thing, but with the
+command-line one you can batch process.
 - `fcpscene-gui` graphical user interface
 - `fcpscene` command-line
 
@@ -30,8 +47,9 @@ supports batch processing.
 You video file should be in a directory Final Cut Pro can access &mdash; your
 📂`Home` and 📂`Movies` directories are allowed by default. **Otherwise, grant
 Full-Disk Access** to Final Cut Pro. If not, Final Cut will crash when importing
-the `fcpxml` project &mdash; for example, that will happen if your video is in
-your ⚠️ _Desktop_, ⚠️ _Documents_, or any other TCC-protected folder.
+the project. For example, that will happen if your video is in your ⚠️
+_Desktop_, ⚠️ _Documents_, or any other TCC-protected folder, regardless of
+where the `.fcpxml` file is.
 
 
 
@@ -53,24 +71,27 @@ percent. Also, the sensitivity doesn’t affect speed.
 
 
 ### Importing into Final Cut Pro
-Double-click the generated `.fcpxml` file to import it.
+Two options:
 
-Or, import it from Final Cut Pro: File &rarr; Import &rarr; XML &rarr;  Select the generated `.fcpxml`
+- Double-click the generated `.fcpxml` file.
+- Or, from Final Cut Pro, File &rarr; Import &rarr; XML &rarr;  Select the generated `.fcpxml`
 
-After importing, you can delete the `.fcpxml`
+You can delete the `.fcpxml` afterward.
 
 <br>
 
 
 
-## Or, Run the Command-line
+<details>
+<summary><strong>How to run the command-line program?</strong></summary>
+
+## Running the command-line</h2>
 
 ```shell
 fcpscene ~/Movies/my-video.mp4
 ```
 
-In that example, an `~/Movies/my-video.fcpxml` project will
-be created. That is, in the same directory the video is in.
+That example generates an `~/Movies/my-video.fcpxml` project.
 
 Tip: If you don’t want to type the video file path, just drag the
 file into the Terminal — it will paste the path for you.
@@ -78,7 +99,7 @@ file into the Terminal — it will paste the path for you.
 
 ### Options
 #### Output filename
-Default: `<video-dir>/<video-name>.fcpxml`
+Default: `<video-dir>/<video-name>.fcpxml` (i.e., in the same directory the video is in)
 
 ```shell
 fcpscene my-video.mp4 --output my-project.fcpxml
@@ -122,6 +143,7 @@ computer from sleeping while it’s running a task.
 Also, keep your computer in a well ventilated area. `fcpscene` uses `ffmpeg`
 behind the scenes, which will 🔥 max out your CPU cores.
 
+</details>
 
 <br>
 
@@ -129,10 +151,11 @@ behind the scenes, which will 🔥 max out your CPU cores.
 ## Final Cut Pro Tips
 
 ### Joining Clips
-In iMovie there’s (Cmd+J), but in Final Cut we don’t "join" clips, we "delete" cuts.
+In iMovie there’s (Cmd+J), but in Final Cut we don’t _join_ clips, we _delete_ cuts.
 
-Pick the Trim Tool (T), and select both edges by clicking between
-two clips, and hit _Delete_.
+1. Pick the Trim Tool (T)
+2. Select both edges by clicking between two clips
+3. Hit **Delete**
 
 Alternatively, you can drag those two edges until they touch the adjacent clip.
 
@@ -141,7 +164,7 @@ Alternatively, you can drag those two edges until they touch the adjacent clip.
 <br/>
 
 ### Batch Clip Rename
-1. Select all the clips you want to rename.
+1. Select the clips you want to rename
 2. Window &rarr; Show in Workspace &rarr; Inspector (Cmd+4)
 3. Go to the ⓘ Info Inspector Tab (Ctrl+Tab)
 4. Type a name
