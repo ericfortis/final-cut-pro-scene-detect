@@ -194,8 +194,7 @@ def save_file(xml, suggested_filename):
   file = filedialog.asksaveasfilename(
     defaultextension='.fcpxml',
     initialfile=suggested_filename,
-    filetypes=[('Final Cut Pro XML', '*.fcpxml')]
-  )
+    filetypes=[('Final Cut Pro XML', '*.fcpxml')])
   if file:
     try:
       with open(file, 'w', encoding='utf-8') as f:
