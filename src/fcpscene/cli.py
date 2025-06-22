@@ -64,7 +64,7 @@ def main():
     if not args.quiet:
       print(f'\n💾 file://{Path(output_file).resolve()}')
   except (OSError, IOError) as e:
-    sys.stderr.write(f'\nERROR: Failed to save to {output_file}: {e}')
+    sys.stderr.write(f'\nERROR: Failed to write to {output_file}: {e}')
     sys.exit(1)
 
 

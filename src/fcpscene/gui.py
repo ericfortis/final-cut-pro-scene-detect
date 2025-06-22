@@ -197,9 +197,13 @@ def save_file(xml, suggested_filename):
     filetypes=[('Final Cut Pro XML', '*.fcpxml')]
   )
   if file:
-    with open(file, 'w', encoding='utf-8') as f:
-      f.write(xml)
-
+    try:
+      with open(file, 'w', encoding='utf-8') as f:
+        f.write(xml)
+    except PermissionError as e:
+      messagebox.showerror('Write Error', f'Permission denied:\n{e}')
+    except OSError as e:
+      messagebox.showerror('Write Error', f'Failed to write file:\n{e}')
 
 if __name__ == '__main__':
   GUI.run()
