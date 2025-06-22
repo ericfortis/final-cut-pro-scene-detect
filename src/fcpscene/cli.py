@@ -15,7 +15,7 @@ def main():
 
   parser = argparse.ArgumentParser(
     description=__description__,
-    epilog=f'Source Code: {__repo_url__}\nPowered by FFmpeg',
+    epilog=f'{__repo_url__}\nPowered by FFmpeg',
     formatter_class=argparse.RawDescriptionHelpFormatter)
 
   parser.add_argument('video', help='Path to the input video file')

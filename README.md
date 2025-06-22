@@ -13,7 +13,7 @@ example, the timeline below has six clips (five cuts).
 In Davinci Resolve Studio, the paid version, you can run scene detection and export to Final Cut Pro.
 
 #### Different Approach
-Instead of cutting the timeline, there are many tools that spit the video into small videos.
+Instead of cutting the timeline, there are many tools for splitting the video into small videos.
 
 <details>
 <summary><b>Kdenlive</b> (for programmers)</summary>
@@ -37,10 +37,9 @@ brew tap ericfortis/fcpscene
 brew install fcpscene
 ```
 
-That will install two programs. They do the same thing, but with the
-command-line one you can batch process.
+That will install two programs. They do the same thing.
 - `fcpscene-gui` graphical user interface
-- `fcpscene` command-line
+- `fcpscene` command-line (for batch processing)
 
 
 ## Place your video in your 📂`Home` or 📂`Movies` directory
@@ -150,7 +149,8 @@ behind the scenes, which will 🔥 max out your CPU cores.
 
 ## Final Cut Pro Tips
 
-### Joining Clips
+<details>
+<summary><b>Joining Clips</b></summary>
 In iMovie there’s (Cmd+J), but in Final Cut we don’t _join_ clips, we _delete_ cuts.
 
 1. Pick the Trim Tool (T)
@@ -160,17 +160,21 @@ In iMovie there’s (Cmd+J), but in Final Cut we don’t _join_ clips, we _delet
 Alternatively, you can drag those two edges until they touch the adjacent clip.
 
 ![](README-tip-fcp-join-clips.png)
+</details>
 
 <br/>
 
-### Batch Clip Rename
+
+<details>
+<summary><b>Batch Clip Rename</b></summary>
+
 1. Select the clips you want to rename
 2. Window &rarr; Show in Workspace &rarr; Inspector (Cmd+4)
 3. Go to the ⓘ Info Inspector Tab (Ctrl+Tab)
 4. Type a name
 
 ![](README-tip-fcp-batch-rename.png)
-
+</details>
 
 <br>
 

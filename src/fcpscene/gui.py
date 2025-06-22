@@ -55,7 +55,6 @@ class GUI:
       messagebox.showinfo(
         'About fcpscene',
         f'fcpscene {__version__}\n\n'
-        'Source Code\n'
         f'{__repo_url__}\n\n'
         'Powered by FFmpeg')
 
