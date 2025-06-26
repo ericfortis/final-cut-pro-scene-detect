@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from math import ceil
 from signal import SIGINT
 from subprocess import Popen, PIPE
 import re

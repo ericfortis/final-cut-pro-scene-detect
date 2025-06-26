@@ -18,30 +18,36 @@ def main():
     epilog=f'{__repo_url__}\nPowered by FFmpeg',
     formatter_class=argparse.RawDescriptionHelpFormatter)
 
-  parser.add_argument('video', help='Path to the input video file')
-
+  parser.add_argument(
+    'video',
+    help='Path to the input video file'
+  )
   parser.add_argument(
     '-v', '--version',
     action='version',
-    version=__version__)
+    version=__version__
+  )
   parser.add_argument(
     '-s', '--sensitivity',
     type=validate_percent,
     default=85,
-    help='(0-100, default: %(default)s) frame difference percent for detecting scene changes')
+    help='(0-100, default: %(default)s) frame difference percent for detecting scene changes'
+  )
   parser.add_argument(
     '-w', '--proxy-width',
     type=int,
     default=PROXY_WIDTH,
-    help=' (default: %(default)s) width of scaled video used for speeding up analysis')
+    help=' (default: %(default)s) width of scaled video used for speeding up analysis'
+  )
   parser.add_argument(
     '-o', '--output',
-    help='(default: <video-dir>/<video-name>.fcpxml) Name of the output .fcpxml')
+    help='(default: <video-dir>/<video-name>.fcpxml) Name of the output .fcpxml'
+  )
   parser.add_argument(
     '-q', '--quiet',
     help='Suppress printing video info, progress, and output file name',
-    action='store_true')
-
+    action='store_true'
+  )
   args = parser.parse_args()
 
   v = VideoAttr(args.video)
@@ -55,11 +61,11 @@ def main():
     print(v.summary())
     bus.subscribe_progress(print_progress)
 
-  out_xml = scenes_to_fcp(v, bus, args.sensitivity, args.proxy_width)
+  xml = scenes_to_fcp(v, bus, args.sensitivity, args.proxy_width)
   output_file = args.output or Path(args.video).with_suffix('.fcpxml')
 
   try:
-    Path(output_file).write_text(out_xml, encoding='utf-8')
+    Path(output_file).write_text(xml, encoding='utf-8')
     if not args.quiet:
       print(f'\n💾 file://{Path(output_file).resolve()}')
   except (OSError, IOError) as e:
