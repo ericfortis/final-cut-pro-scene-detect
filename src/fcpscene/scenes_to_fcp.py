@@ -16,7 +16,6 @@ PROXY_WIDTH = 320
 def scenes_to_fcp(v: VideoAttr, bus: EventBus, sensitivity, proxy_width=PROXY_WIDTH) -> str:
   cuts = detect_scene_cuts(v.path, v.duration, bus, sensitivity, proxy_width)
   cuts.append(v.duration)
-  cuts = [ceil(t * v.fps) for t in cuts]  # seconds to frames
 
   xml = f'''<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE fcpxml>
@@ -39,8 +38,10 @@ def scenes_to_fcp(v: VideoAttr, bus: EventBus, sensitivity, proxy_width=PROXY_WI
 
   # The clip’s [left and right] edges, `offset` and `offset+duration`, are in timeline times.
   # On the other hand, `start` is in video time. For our purposes, `offset=start`.
+  # Experimentally, the rounding rule is: `floor` when decimals are close to zero, `ceil` otherwise.
   prev_frame = 0
-  for frame in cuts:
+  for cut_secs in cuts:
+    frame = int(cut_secs * v.fps + 0.9999) # ceil with threshold
     if frame - prev_frame <= 1:  # ignore 1-frame cuts
       continue
     offset_ticks = prev_frame * v.fps_denominator
@@ -75,7 +76,7 @@ def detect_scene_cuts(video, video_duration, bus: EventBus, sensitivity, proxy_w
       f"select='gt(scene, {1 - sensitivity / 100})'",  # select when cut probability is greater than `threshold`
       'metadata=print'
     ]),
-    '-fps_mode', 'vfr',  # ensure the natural frame timing is not changed by the `scene` filter
+    '-fps_mode', 'vfr',  # ensure the natural frame timing is not changed by the `scene` filter (Not sure if it’s really needed)
     '-f', 'null',  # null-muxer for discarding the processed video (we won’t write encoded binary data)
     '-'  # output to stdout (needed although the null-muxer outputs nothing)
   ]
