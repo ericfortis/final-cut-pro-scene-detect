@@ -2,6 +2,8 @@
 
 import sys
 
+from .fcpxml_compound_clips import fcpxml_compound_clips
+
 try:
   import tkinter as tk
 except ImportError:
@@ -10,14 +12,43 @@ except ImportError:
 
 import threading
 import webbrowser
-from tkinter import filedialog, messagebox, scrolledtext, ttk
 from pathlib import Path
+from tkinter import filedialog, messagebox, ttk
 
-from fcpscene import __version__, __repo_url__, __title__
-from fcpscene.utils import format_seconds
-from fcpscene.video_attr import VideoAttr
-from fcpscene.event_bus import EventBus
-from fcpscene.scenes_to_fcp import scenes_to_fcp
+from fcpscene import __version__, __repo_url__, __title__, PROXY_WIDTH
+from .time_utils import date_mdy
+from .event_bus import EventBus
+from .video_attr import VideoAttr
+from .fcpxml_clips import fcpxml_clips
+from .detect_scene_cut_times import detect_scene_cut_times
+
+
+video_label = dict(x=30, y=25)
+video_entry = dict(x=100, y=20, width=450)
+video_browse_btn = dict(x=556, y=19)
+video_hint = dict(x=101, y=46)
+
+radio_compound_clips = dict(x=30, y=92)
+radio_clips = dict(x=162, y=92)
+radio_markers = dict(x=226, y=92)
+
+sensitivity_label = dict(x=340, y=92)
+sensitivity_slider = dict(x=414, y=92)
+sensitivity_value = dict(x=625, y=92)
+
+event_label = dict(x=340, y=130)
+event_entry = dict(x=340, y=150, width=200)
+event_hint = dict(x=340, y=175)
+
+run_stop_btn = dict(x=30, y=150, width=140)
+
+progress_width = 620
+progress_height = 24
+progress_track_color = '#888'
+progress_color = '#304ffe'
+progress_cut_color = '#fff'
+progress_label = dict(x=30, y=202)
+progress_canvas = dict(x=30, y=225)
 
 
 class GUI:
@@ -29,22 +60,36 @@ class GUI:
 
 
   def __init__(self, root):
+    self.cuts = []
+    self.v = VideoAttr('')
+
     self.root = root
-    self.bus = EventBus()
-
-    self.running = False
-
     self.root.title(__title__)
+    self.center_window(680, 270)
     self.root.resizable(False, False)
+    self.root.focus_force()
+
     self.initial_dir = str(Path.home() / 'Movies')
+
+    self.bus = EventBus()
+    self.running = False
 
     self.setup_menus()
 
     self.render_video_picker()
+    self.render_format_radio_buttons()
     self.render_sensitivity_slider()
     self.render_run_stop_button()
-    self.render_progress_bar()
-    self.render_cuts_list()
+    self.render_event_name_textbox()
+    self.render_progress_label()
+    self.render_progress_timeline()
+
+  def center_window(self, width, height):
+    screen_width = self.root.winfo_screenwidth()
+    screen_height = self.root.winfo_screenheight()
+    x = (screen_width - width) // 2
+    y = (screen_height - height) // 2
+    self.root.geometry(f'{width}x{height}+{x}+{y}')
 
 
   def setup_menus(self):
@@ -53,8 +98,8 @@ class GUI:
 
     def show_about():
       messagebox.showinfo(
-        'About fcpscene',
-        f'fcpscene {__version__}\n\n'
+        'About ms-fcpscene',
+        f'ms-fcpscene {__version__}\n\n'
         f'{__repo_url__}\n\n'
         'Powered by FFmpeg')
 
@@ -68,90 +113,132 @@ class GUI:
 
 
   def render_video_picker(self):
-    ttk.Label(self.root, text='Video File:').grid(row=0, padx=(10, 0), pady=(10, 0), sticky='w')
-    self.video_entry = ttk.Entry(self.root, width=43)
-    self.video_entry.grid(row=0, column=1, padx=(0, 0), pady=(10, 0), sticky='w')
-    ttk.Button(self.root, text='Browse', command=self.browse_file).grid(row=0, column=2, padx=(0, 10), pady=(10, 0))
+    def browse_file():
+      file_path = filedialog.askopenfilename(
+        title='Select Video File',
+        initialdir=self.initial_dir,
+        filetypes=[
+          ('Final Cut Pro-Compatible Files', '*.mp4 *.mov *.avi *.m4v *.3gp *.3g2 *.mts *.m2ts *.mxf'),
+          ('All files', '*.*')
+        ])
+      if file_path:
+        self.initial_dir = str(Path(file_path).parent)
+        self.video_entry.delete(0, tk.END)
+        self.video_entry.insert(0, file_path)
+        self.v = VideoAttr(file_path)
 
-  def browse_file(self):
-    file_path = filedialog.askopenfilename(
-      title='Select Video File',
-      initialdir=self.initial_dir,
-      filetypes=[
-      ('Final Cut Pro-Compatible Files', '*.mp4 *.mov *.avi *.m4v *.3gp *.3g2 *.mts *.m2ts *.mxf'),
-      ('All files', '*.*')
-    ])
-    if file_path:
-      self.initial_dir = str(Path(file_path).parent)
-      self.video_entry.delete(0, tk.END)
-      self.video_entry.insert(0, file_path)
+        if not self.v.error:
+          self.video_hint.configure(text=self.v.summary)
+          self.root.focus_force()
+        else:
+          messagebox.showerror('Error', self.v.error)
+
+    ttk.Label(self.root, text='Video File').place(**video_label)
+    self.video_entry = ttk.Entry(self.root)
+    self.video_entry.place(**video_entry)
+    ttk.Button(self.root, text='Browse', command=browse_file).place(**video_browse_btn)
+    self.video_hint = ttk.Label(self.root, text='Place video in your Home or Movies directory')
+    self.video_hint.place(**video_hint)
 
 
   def render_sensitivity_slider(self):
-    ttk.Label(self.root, text='Sensitivity:').grid(row=1, column=0, padx=(10, 0), pady=(10, 0), sticky='w')
-    self.sensitivity_frame = ttk.Frame(self.root)
-    self.sensitivity_frame.grid(row=1, column=1, columnspan=3, sticky='w', padx=0, pady=(10, 0))
-    self.sensitivity_val = tk.IntVar(value=85)
+    ttk.Label(self.root, text='Sensitivity').place(**sensitivity_label)
+    self.sensitivity_val = tk.IntVar(value=88)
 
     def on_slider_move(val):
       int_val = int(float(val))
       self.sensitivity_val.set(int_val)
 
     self.sensitivity_slider = ttk.Scale(
-      self.sensitivity_frame,
+      self.root,
       from_=0,
       to=100,
       orient='horizontal',
       command=on_slider_move,
-      value=85.0,
-      length=150
+      value=88.0,
+      length=202
     )
-    self.sensitivity_slider.pack(side='left')
-    self.sensitivity_display = ttk.Label(self.sensitivity_frame, textvariable=self.sensitivity_val, width=3)
-    self.sensitivity_display.pack(side='left')
+    self.sensitivity_slider.place(**sensitivity_slider)
+    self.sensitivity_display = ttk.Label(self.root, textvariable=self.sensitivity_val)
+    self.sensitivity_display.place(**sensitivity_value)
+
+
+  def render_format_radio_buttons(self):
+    self.format_val = tk.StringVar(value='compound')
+    ttk.Radiobutton(
+      self.root,
+      text='Compound Clips',
+      variable=self.format_val,
+      value='compound'
+    ).place(**radio_compound_clips)
+
+    ttk.Radiobutton(
+      self.root,
+      text='Clips',
+      variable=self.format_val,
+      value='clips'
+    ).place(**radio_clips)
+
+    ttk.Radiobutton(
+      self.root,
+      text='Markers',
+      variable=self.format_val,
+      value='markers'
+    ).place(**radio_markers)
 
 
   def render_run_stop_button(self):
+    def on_click_run_stop():
+      if self.running:
+        self.bus.emit_stop()
+        self.bus.unsubscribe_progress()
+        self.run_stop_button.config(text='Stop and Save')
+      else:
+        self.run_scene_detect()
+        self.run_stop_button.config(text='Run')
+
     self.run_stop_button = ttk.Button(
-      self.sensitivity_frame,
+      self.root,
       text='Run',
-      command=self.on_click_run_stop,
-      width=15
-    )
-    self.run_stop_button.pack(side='left', padx=(80, 10), pady=(0, 0))
-
-  def on_click_run_stop(self):
-    if self.running:
-      self.bus.emit_stop()
-      self.bus.unsubscribe_progress()
-      self.run_stop_button.config(text='Stop and Save')
-    else:
-      self.run_scene_detect()
-      self.run_stop_button.config(text='Run')
+      command=on_click_run_stop)
+    self.run_stop_button.place(**run_stop_btn)
 
 
-  def render_progress_bar(self):
+  def render_event_name_textbox(self):
+    ttk.Label(self.root, text='Event Name').place(**event_label)
+    self.event_name_val = tk.StringVar(value=date_mdy())
+    self.event_name_entry = ttk.Entry(self.root, textvariable=self.event_name_val, width=18)
+    self.event_name_entry.place(**event_entry)
+    ttk.Label(self.root, text='Must exist in Library before importing').place(**event_hint)
+
+
+  def render_progress_label(self):
     self.n_cuts = tk.IntVar()
     self.progress = tk.DoubleVar()
     self.progress_label = tk.StringVar()
-    ttk.Label(self.root, textvariable=self.progress_label).grid(row=4, column=1, pady=(10, 0))
-    self.progress_bar = ttk.Progressbar(self.root, maximum=100, variable=self.progress, length=400)
-    self.progress_bar.grid(row=5, column=0, columnspan=3)
+    ttk.Label(self.root, textvariable=self.progress_label).place(**progress_label)
 
-  def set_progress(self, progress, n_cuts):
+  def render_progress_timeline(self):
+    self.progress_canvas = tk.Canvas(self.root, width=progress_width, height=progress_height, bg=progress_track_color,
+                                     highlightthickness=0)
+    self.progress_canvas.place(**progress_canvas)
+
+  def set_progress_label(self, progress, n_cuts):
     self.progress.set(progress * 100)
     self.progress_label.set(f'{int(progress * 100)}% (Cuts {n_cuts})')
 
-
-  def render_cuts_list(self):
-    self.log_box = scrolledtext.ScrolledText(self.root, height=10)
-    self.log_box.grid(row=6, column=0, columnspan=3, padx=10, pady=(5, 10))
-
-  def update_cuts_list(self, cut_time: float, video_duration: float, n_cuts: int):
-    progress = cut_time / video_duration
-    self.set_progress(progress, n_cuts)
-    self.log_box.insert(tk.END, f'{format_seconds(cut_time)} ')
+  def on_progress(self, progress: float, cuts: list[float]):
+    self.cuts = cuts
+    self.set_progress_label(progress, len(cuts))
+    self.update_progress_canvas(progress)
     self.root.update_idletasks()
+
+  def update_progress_canvas(self, progress: float):
+    self.progress_canvas.delete('all')
+    self.progress_canvas.create_rectangle(0, 0, progress_width * progress, progress_height, fill=progress_color, outline='')
+    for cut in self.cuts:
+      x = cut / self.v.duration * progress_width
+      self.progress_canvas.create_line(x, 0, x, progress_height, fill=progress_cut_color, width=1)
 
 
   def run_scene_detect(self):
@@ -160,24 +247,24 @@ class GUI:
       messagebox.showinfo('No file', 'Please select a video file.')
       return
 
-    v = VideoAttr(video)
-    if v.get_error():
-      messagebox.showerror('Error', v.get_error())
-      return
-
     sensitivity = float(self.sensitivity_val.get())
 
-    self.log_box.delete(1.0, tk.END)
-    self.log_box.insert(tk.END, f'{v.summary()}\n')
-    self.set_progress(0, 0)
+    self.set_progress_label(0, 0)
     self.bus.subscribe_progress(
-      lambda *args: self.root.after(0, lambda: self.update_cuts_list(*args)))
+      lambda *args: self.root.after(0, lambda: self.on_progress(*args)))
 
     def run():
       try:
+        v = self.v
         self.running = True
-        self.run_stop_button.config(text='Stop and Save')
-        xml = scenes_to_fcp(v, self.bus, sensitivity)
+        self.run_stop_button.config(text='Stop and Export')
+        cut_times = detect_scene_cut_times(v.path, v.duration, self.bus, sensitivity, PROXY_WIDTH)
+
+        if self.format_val.get() == 'compound':
+          xml = fcpxml_compound_clips(cut_times, v, self.event_name_val.get())
+        else:
+          xml = fcpxml_clips(cut_times, v)
+
         self.bus.unsubscribe_progress()
         self.root.after(0, lambda: save_file(xml, Path(video).with_suffix('.fcpxml').name))
       except Exception as e:
@@ -202,6 +289,3 @@ def save_file(xml, suggested_filename):
       messagebox.showerror('Write Error', f'Permission denied:\n{e}')
     except OSError as e:
       messagebox.showerror('Write Error', f'Failed to write file:\n{e}')
-
-if __name__ == '__main__':
-  GUI.run()

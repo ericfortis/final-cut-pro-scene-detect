@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE fcpxml>
+<fcpxml version="1.13">
+  <resources>
+    <format id="r1"
+      width="1920"
+      height="1080"
+      colorSpace="1-1-1"
+      frameDuration="1/60s"/>
+    <asset id="r2" start="0s" format="r1">
+      <media-rep kind="original-media" src="file://__VIDEO_DIR_PLACEHOLDER__/60fps.mp4"/>
+    </asset>
+    <media id="r3" name="60fps_1">
+      <sequence format="r1" tcStart="0s">
+        <spine>
+          <asset-clip ref="r2" offset="0s" start="0s" duration="5s"/>
+        </spine>
+      </sequence>
+    </media>
+    <media id="r4" name="60fps_2">
+      <sequence format="r1" tcStart="0s">
+        <spine>
+          <asset-clip ref="r2" offset="0s" start="5s" duration="5s"/>
+        </spine>
+      </sequence>
+    </media>
+    <media id="r5" name="60fps_3">
+      <sequence format="r1" tcStart="0s">
+        <spine>
+          <asset-clip ref="r2" offset="0s" start="10s" duration="5s"/>
+        </spine>
+      </sequence>
+    </media>
+    <media id="r6" name="60fps_4">
+      <sequence format="r1" tcStart="0s">
+        <spine>
+          <asset-clip ref="r2" offset="0s" start="15s" duration="5s"/>
+        </spine>
+      </sequence>
+    </media>
+    <media id="r7" name="60fps_5">
+      <sequence format="r1" tcStart="0s">
+        <spine>
+          <asset-clip ref="r2" offset="0s" start="20s" duration="5s"/>
+        </spine>
+      </sequence>
+    </media>
+    <media id="r8" name="60fps_6">
+      <sequence format="r1" tcStart="0s">
+        <spine>
+          <asset-clip ref="r2" offset="0s" start="25s" duration="5s"/>
+        </spine>
+      </sequence>
+    </media>
+  </resources>
+  <library>
+    <event name="12-30-25">
+      <project name="60fps">
+        <sequence format="r1" tcStart="0s">
+          <spine>
+            <ref-clip ref="r3" offset="0s" duration="5s"/>
+            <ref-clip ref="r4" offset="5s" duration="5s"/>
+            <ref-clip ref="r5" offset="10s" duration="5s"/>
+            <ref-clip ref="r6" offset="15s" duration="5s"/>
+            <ref-clip ref="r7" offset="20s" duration="5s"/>
+            <ref-clip ref="r8" offset="25s" duration="5s"/>
+          </spine>
+        </sequence>
+      </project>
+    </event>
+  </library>
+</fcpxml>

@@ -1,13 +1,20 @@
-from pathlib import Path
-import argparse
 import sys
+import argparse
+from shutil import which
+from pathlib import Path
 
-from fcpscene import __version__, __repo_url__, __description__
-from fcpscene.utils import check_dependency
-from fcpscene.video_attr import VideoAttr
-from fcpscene.event_bus import EventBus
-from fcpscene.scenes_to_fcp import scenes_to_fcp, PROXY_WIDTH
+from fcpscene import __version__, __repo_url__, __description__, PROXY_WIDTH
+from .time_utils import date_mdy
+from .video_attr import VideoAttr
+from .event_bus import EventBus
+from .fcpxml_clips import fcpxml_clips
+from .fcpxml_compound_clips import fcpxml_compound_clips
+from .detect_scene_cut_times import detect_scene_cut_times
 
+# TODO export to csv,
+# TODO UI show cuts as timeline
+# TODO UI checkbox compound
+# TODO check dep in UI
 
 def main():
   check_dependency('ffmpeg')
@@ -20,6 +27,7 @@ def main():
 
   parser.add_argument(
     'video',
+    type=argparse.FileType('r'),
     help='Path to the input video file'
   )
   parser.add_argument(
@@ -30,7 +38,7 @@ def main():
   parser.add_argument(
     '-s', '--sensitivity',
     type=validate_percent,
-    default=85,
+    default=89,
     help='(0-100, default: %(default)s) frame difference percent for detecting scene changes'
   )
   parser.add_argument(
@@ -44,30 +52,39 @@ def main():
     help='(default: <video-dir>/<video-name>.fcpxml) Name of the output .fcpxml'
   )
   parser.add_argument(
-    '-q', '--quiet',
-    help='Suppress printing video info, progress, and output file name',
-    action='store_true'
+    '-e', '--event-name',
+    default=date_mdy(),
+    help='Existing event name. Defaults to today’s date (e.g. %(default)s), which matches the default event in new libraries'
+  )
+  parser.add_argument(
+    '--compound-clip',
+    action=argparse.BooleanOptionalAction,
+    default=True,
+    help='(default: True) Wraps each clip in its own compound clip'
   )
   args = parser.parse_args()
 
-  v = VideoAttr(args.video)
-  if v.get_error():
-    sys.stderr.write(f'\nERROR: {v.get_error()}\n')
+  v = VideoAttr(args.video.name)
+  if v.error:
+    sys.stderr.write(f'\nERROR: {v.error}\n')
     sys.exit(1)
 
+  print(v.summary)
+
   bus = EventBus()
+  bus.subscribe_progress(print_progress)
+  cut_times = detect_scene_cut_times(v.path, v.duration, bus, args.sensitivity, args.proxy_width)
 
-  if not args.quiet:
-    print(v.summary())
-    bus.subscribe_progress(print_progress)
-
-  xml = scenes_to_fcp(v, bus, args.sensitivity, args.proxy_width)
-  output_file = args.output or Path(args.video).with_suffix('.fcpxml')
+  if args.compound_clip:
+    xml = fcpxml_compound_clips(cut_times, v, args.event_name)
+    output_file = args.output or Path(args.video.name).with_name(v.stem + f'-Event-{args.event_name}.fcpxml')
+  else:
+    xml = fcpxml_clips(cut_times, v)
+    output_file = args.output or Path(args.video.name).with_suffix('.fcpxml')
 
   try:
     Path(output_file).write_text(xml, encoding='utf-8')
-    if not args.quiet:
-      print(f'\n💾 file://{Path(output_file).resolve()}')
+    print(f'\n💾 file://{Path(output_file).resolve()}')
   except (OSError, IOError) as e:
     sys.stderr.write(f'\nERROR: Failed to write to {output_file}: {e}')
     sys.exit(1)
@@ -80,10 +97,9 @@ def validate_percent(value):
   return f
 
 
-def print_progress(cut_time: float, video_duration: float, n_cuts: int):
-  progress = cut_time / video_duration
+def print_progress(progress, cuts):
   bar = progress_bar(progress)
-  print(f'\r{bar} {int(progress * 100)}% (Cuts {n_cuts})  ', end='', flush=True)
+  print(f'\r{bar} {int(progress * 100)}% (Cuts {len(cuts)})  ', end='', flush=True)
 
 
 def progress_bar(progress):
@@ -96,5 +112,7 @@ def progress_bar(progress):
   return ('█' * n_full) + partial + ('⠂' * n_remaining)
 
 
-if __name__ == '__main__':
-  main()
+def check_dependency(program: str):
+  if not which(program):
+    sys.stderr.write(f'Missing dependency: {program}\n')
+    sys.exit(1)
