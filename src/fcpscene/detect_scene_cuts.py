@@ -10,19 +10,18 @@ CutTimes = list[float]
 
 
 def detect_scene_cut_times(v, bus, sensitivity, proxy_width) -> CutTimes:
-  """
-  Finds the timestamps of scene changes using FFmpeg
+  """Finds the timestamps of scene changes using FFmpeg
 
   Video filter chain:
     - `scale`: For speed. Downscales video to `proxy_width` in aspect ratio
     - `select`: if scene-change-probability > threshold
-    - `metadata`: Writes to stderr the selected frame timestamp
+    - `metadata`: Writes the selected frame timestamp to stderr
 
   Args:
       v (VideoAttr):
-      bus (EventBus): PubSub for listening to a UI stop signal and reporting progress
+      bus (EventBus): For listening to a UI stop signal and reporting progress
       sensitivity (float): 0 to 100; inversely mapped to the scene-change threshold
-      proxy_width (int): Width in pixels for downscaling video before processing
+      proxy_width (int): Width in pixels for downscaling video
   """
 
   cut_time_regex = re.compile(r'Parsed_metadata.*pts_time:(\d+\.?\d*)')
@@ -36,7 +35,7 @@ def detect_scene_cut_times(v, bus, sensitivity, proxy_width) -> CutTimes:
       f"select='gt(scene, {1 - sensitivity / 100})'",
       'metadata=print'
     ]),
-    '-f', 'null', '-',  # Don’t generate an output video (null muxer)
+    '-f', 'null', '-',  # Don’t generate an output video
   ]
 
   cuts = []
@@ -71,9 +70,7 @@ def detect_scene_cut_times(v, bus, sensitivity, proxy_width) -> CutTimes:
         raise RuntimeError(f'ffmpeg exited with code {process.returncode}:\n' + ''.join(stderr_buffer))
 
       return cuts
-
-  # Ctrl+C terminates analysis, and we create a file with the progress so far
-  except KeyboardInterrupt:
+  except KeyboardInterrupt:  # Ctrl+C terminates analysis, and we create a file with the progress so far
     if process:
       process.terminate()
   except Exception:

@@ -2,13 +2,13 @@ import unittest
 from pathlib import Path
 
 from fcpscene import PROXY_WIDTH
-from fcpscene.csv_clips import csv_clips
 from fcpscene.event_bus import EventBus
-from fcpscene.fcpxml_markers import fcpxml_markers
 from fcpscene.video_attr import VideoAttr
-from fcpscene.fcpxml_clips import fcpxml_clips
-from fcpscene.detect_scene_cut_times import detect_scene_cut_times
-from fcpscene.fcpxml_compound_clips import fcpxml_compound_clips
+from fcpscene.to_csv_clips import to_csv_clips
+from fcpscene.to_fcpxml_clips import to_fcpxml_clips
+from fcpscene.to_fcpxml_markers import to_fcpxml_markers
+from fcpscene.to_fcpxml_compound_clips import to_fcpxml_compound_clips
+from fcpscene.detect_scene_cuts import detect_scene_cut_times
 
 VIDEO_DIR_PLACEHOLDER = '__VIDEO_DIR_PLACEHOLDER__'
 
@@ -29,19 +29,19 @@ class FCPScene(unittest.TestCase):
 
   def _clips(self, video, expected):
     cuts, v = self._detect(video)
-    self._assert(fcpxml_clips(cuts, v), expected)
+    self._assert(to_fcpxml_clips(cuts, v), expected)
 
   def _compound_clips(self, video, expected):
     cuts, v = self._detect(video)
-    self._assert(fcpxml_compound_clips(cuts, v, '12-30-25'), expected)
+    self._assert(to_fcpxml_compound_clips(cuts, v), expected)
 
   def _markers(self, video, expected):
     cuts, v = self._detect(video)
-    self._assert(fcpxml_markers(cuts, v), expected)
+    self._assert(to_fcpxml_markers(cuts, v), expected)
 
   def _csv(self, video, expected):
     cuts, v = self._detect(video)
-    self._assert(csv_clips(cuts, v.duration), expected)
+    self._assert(to_csv_clips(cuts, v.duration), expected)
 
 
   def _assert(self, actual, expected):

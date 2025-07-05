@@ -1,9 +1,5 @@
-from datetime import date
-
-
 def format_seconds(seconds: float, max_decimals: int = 2) -> str:
-  """
-  Seconds to string 9h9m9s
+  """Seconds to string 9h9m9s
 
   Examples:
       >>> format_seconds(1.1)
@@ -26,8 +22,7 @@ def format_seconds(seconds: float, max_decimals: int = 2) -> str:
 
 
 def clean_decimals(number) -> str:
-  """
-  Removes trailing zeros and a trailing decimal point
+  """Removes trailing zeros and a trailing decimal point
 
   Examples:
       >>> clean_decimals(3.1400)
@@ -36,14 +31,3 @@ def clean_decimals(number) -> str:
       '5'
   """
   return str(number).rstrip('0').rstrip('.') or '0'
-
-
-def date_mdy() -> str:
-  """
-  Returns today's date formatted as M-D-YY (no leading zeros)
-
-  Example:
-    >>> date_mdy()
-    '1-30-25'
-  """
-  return date.today().strftime('%-m-%-d-%y')

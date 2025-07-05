@@ -54,7 +54,7 @@
     </media>
   </resources>
   <library>
-    <event name="12-30-25">
+    <event name="fcpscene">
       <project name="60fps">
         <sequence format="r1" tcStart="0s">
           <spine>

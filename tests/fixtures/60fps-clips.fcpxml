@@ -12,7 +12,7 @@
     </asset>
   </resources>
   <library>
-    <event>
+    <event name="fcpscene">
       <project name="60fps">
         <sequence format="r1" tcStart="0s">
           <spine>

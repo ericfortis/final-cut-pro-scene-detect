@@ -1,5 +1,5 @@
 import unittest
-from fcpscene.time_utils import format_seconds
+from fcpscene.utils import format_seconds
 
 
 m = 60

@@ -5,8 +5,9 @@ from dataclasses import dataclass, fields, Field
 from urllib.parse import quote
 from collections.abc import Sequence
 
-from .time_utils import format_seconds, clean_decimals
+from .utils import format_seconds, clean_decimals
 
+# TODO FCP actually uses frameDuration="100/6000s", we 1/60, think about this
 
 @dataclass
 class FFProbe:
@@ -52,9 +53,25 @@ class VideoAttr(FFProbe):
     return '   '.join([
       f'{self.width}x{self.height}',
       f'{clean_decimals(f'{self.fps:.2f}')}fps',
-      self.codec_name,
+      self.pretty_codec_name,
       f'(Duration: {format_seconds(self.duration)})'
     ])
+
+  @property
+  def pretty_codec_name(self):
+    # ffmpeg -codecs | grep '^...V'
+    fcp_codecs = {
+      'dnxhd': 'Avid DNxHD',
+      'dvvideo': 'DV (Digital Video)',
+      'h264': 'AVC (H.264)',
+      'hevc': 'HVEC (H.265)',
+      'jpeg2000': 'JPEG 2000',
+      'mpeg4': 'MPEG-4 Part 2',
+      'prores': 'ProRes',
+      'qtrle': 'QuickTime RLE',
+      'rawvideo': 'Uncompressed Video',
+    }
+    return fcp_codecs.get(self.codec_name.lower(), self.codec_name)
 
   @property
   def file_uri(self):
@@ -72,8 +89,8 @@ class VideoAttr(FFProbe):
     }.get((self.color_primaries, self.color_trc, self.colorspace), '1-1-1')
 
 
-  def parse(self, _fields: Sequence[Field]):
-    attrs = [f.name for f in _fields]
+  def parse(self, attrs: Sequence[Field]):
+    attrs = [f.name for f in attrs]
     json_out = self.ffprobe(*attrs)
     for attr in attrs:
       setattr(self, attr, json_out.get(attr, ''))

@@ -1,33 +1,30 @@
 #!/usr/bin/env python3
 
-# TODO event name only needed when compound clip (disable it?, or no hint)
-# TODO export to csv,
-# TODO check dep in UI
-# TODO handle no scenes detected
-
-
 import sys
-
-from .fcpxml_markers import fcpxml_markers
 
 try:
   import tkinter as tk
 except ImportError:
+  tk = None
   print('ERROR: tkinter not found')
   sys.exit(1)
 
+import tempfile
 import threading
+import subprocess
 import webbrowser
+from shutil import which
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 
-from fcpscene import __version__, __repo_url__, __title__, PROXY_WIDTH
-from .time_utils import date_mdy
+from fcpscene import __version__, __repo_url__, __title__, PROXY_WIDTH, DEFAULT_SENSITIVITY
 from .event_bus import EventBus
 from .video_attr import VideoAttr
-from .fcpxml_clips import fcpxml_clips
-from .fcpxml_compound_clips import fcpxml_compound_clips
-from .detect_scene_cut_times import detect_scene_cut_times, CutTimes
+from .to_csv_clips import to_csv_clips
+from .to_fcpxml_clips import to_fcpxml_clips
+from .to_fcpxml_markers import to_fcpxml_markers
+from .to_fcpxml_compound_clips import to_fcpxml_compound_clips
+from .detect_scene_cuts import detect_scene_cut_times, CutTimes
 
 
 video_label = dict(x=30, y=25)
@@ -39,23 +36,25 @@ radio_compound_clips = dict(x=30, y=92)
 radio_clips = dict(x=162, y=92)
 radio_markers = dict(x=226, y=92)
 
-sensitivity_label = dict(x=340, y=92)
-sensitivity_slider = dict(x=414, y=92)
-sensitivity_value = dict(x=625, y=92)
+sensitivity_label = dict(x=380, y=92)
+sensitivity_slider_width = 164
+sensitivity_slider = dict(x=456, y=92)
+sensitivity_value = dict(x=630, y=92)
 
-event_label = dict(x=340, y=130)
-event_entry = dict(x=340, y=150, width=200)
-event_hint = dict(x=340, y=175)
+run_stop_btn = dict(x=30, y=140, width=80)
+send_to_fcp_btn = dict(x=150, y=140, width=150)
+export_as_fcp_btn = dict(x=310, y=140, width=200)
+export_as_csv_btn = dict(x=520, y=140, width=130)
 
-run_stop_btn = dict(x=30, y=150, width=140)
+progress_label = dict(x=30, y=195)
+hint_warning = dict(x=210, y=195)
 
 progress_width = 620
 progress_height = 24
 progress_track_color = '#888'
 progress_color = '#304ffe'
 progress_cut_color = '#fff'
-progress_label = dict(x=30, y=202)
-progress_canvas = dict(x=30, y=225)
+progress_canvas = dict(x=30, y=218)
 
 
 class GUI:
@@ -65,9 +64,16 @@ class GUI:
     GUI(root)
     root.mainloop()
 
+  @staticmethod
+  def check_dependencies():
+    if not which('ffmpeg'):
+      messagebox.showerror('Error', 'Dependency "ffmpeg" not found')
+    elif not which('ffprobe'):
+      messagebox.showerror('Error', 'Dependency "ffprobe" not found')
 
   def __init__(self, root):
     self.cuts = []
+    self.check_dependencies()
     self.v = VideoAttr('')
 
     self.root = root
@@ -86,9 +92,14 @@ class GUI:
     self.render_video_picker()
     self.render_format_radio_buttons()
     self.render_sensitivity_slider()
+
     self.render_run_stop_button()
-    self.render_event_name_textbox()
+    self.render_send_to_fcp_btn()
+    self.render_export_as_fcp_btn()
+    self.render_export_as_csv_btn()
+
     self.render_progress_label()
+    self.render_hint_warning()
     self.render_progress_timeline()
 
   def center_window(self, width, height):
@@ -105,16 +116,16 @@ class GUI:
 
     def show_about():
       messagebox.showinfo(
-        'About ms-fcpscene',
-        f'ms-fcpscene {__version__}\n\n'
+        'About fcpscene',
+        f'fcpscene {__version__}\n\n'
         f'{__repo_url__}\n\n'
         'Powered by FFmpeg')
 
     menubar = tk.Menu(self.root)
-    helpmenu = tk.Menu(menubar, tearoff=0)
-    helpmenu.add_command(label='README', command=open_help)
-    helpmenu.add_command(label=f'About {__version__}', command=show_about)
-    menubar.add_cascade(label='Help', menu=helpmenu)
+    help_menu = tk.Menu(menubar, tearoff=0)
+    help_menu.add_command(label='README', command=open_help)
+    help_menu.add_command(label=f'About {__version__}', command=show_about)
+    menubar.add_cascade(label='Help', menu=help_menu)
 
     self.root.config(menu=menubar)
 
@@ -137,6 +148,7 @@ class GUI:
         if not self.v.error:
           self.video_hint.configure(text=self.v.summary)
           self.root.focus_force()
+          self.run_scene_detect()
         else:
           messagebox.showerror('Error', self.v.error)
 
@@ -150,7 +162,7 @@ class GUI:
 
   def render_sensitivity_slider(self):
     ttk.Label(self.root, text='Sensitivity').place(**sensitivity_label)
-    self.sensitivity_val = tk.IntVar(value=88)
+    self.sensitivity_val = tk.IntVar(value=DEFAULT_SENSITIVITY)
 
     def on_slider_move(val):
       int_val = int(float(val))
@@ -162,8 +174,8 @@ class GUI:
       to=100,
       orient='horizontal',
       command=on_slider_move,
-      value=88.0,
-      length=202
+      value=DEFAULT_SENSITIVITY,
+      length=sensitivity_slider_width
     )
     self.sensitivity_slider.place(**sensitivity_slider)
     self.sensitivity_display = ttk.Label(self.root, textvariable=self.sensitivity_val)
@@ -172,6 +184,11 @@ class GUI:
 
   def render_format_radio_buttons(self):
     self.format_val = tk.StringVar(value='compound')
+
+    def on_format_change(*args):
+      self.handle_hint_warning(visible=self.format_val.get() == 'compound')
+    self.format_val.trace_add('write', on_format_change)
+
     ttk.Radiobutton(
       self.root,
       text='Compound Clips',
@@ -193,13 +210,12 @@ class GUI:
       value='markers'
     ).place(**radio_markers)
 
-
   def render_run_stop_button(self):
     def on_click_run_stop():
       if self.running:
         self.bus.emit_stop()
         self.bus.unsubscribe_progress()
-        self.run_stop_button.config(text='Stop and Save')
+        self.run_stop_button.config(text='Stop')
       else:
         self.run_scene_detect()
         self.run_stop_button.config(text='Run')
@@ -211,13 +227,69 @@ class GUI:
     self.run_stop_button.place(**run_stop_btn)
 
 
-  def render_event_name_textbox(self):
-    ttk.Label(self.root, text='Event Name').place(**event_label)
-    self.event_name_val = tk.StringVar(value=date_mdy())
-    self.event_name_entry = ttk.Entry(self.root, textvariable=self.event_name_val, width=18)
-    self.event_name_entry.place(**event_entry)
-    ttk.Label(self.root, text='Must exist in Library before importing').place(**event_hint)
+  def render_send_to_fcp_btn(self):
+    def on_click():
+      if not self.cuts:
+        messagebox.showinfo('No cuts found', 'No scene changes were detected')
+      else:
+        xml = self.process_fcpxml()
+        self.root.after(0, lambda: save_and_send(xml))
 
+    self.send_to_fcp_btn = ttk.Button(
+      self.root,
+      text='Send to Final Cut',
+      command=on_click)
+    self.send_to_fcp_btn.place(**send_to_fcp_btn)
+
+
+  def render_export_as_fcp_btn(self):
+    def on_click():
+      if not self.cuts:
+        messagebox.showinfo('No cuts found', 'No scene changes were detected')
+      else:
+        xml = self.process_fcpxml()
+        self.root.after(0, lambda: save_fcpxml(xml, self.v.path.with_suffix('.fcpxml').name))
+
+    self.export_as_fcp_btn = ttk.Button(
+      self.root,
+      text='Export as Final Cut Project',
+      command=on_click)
+    self.export_as_fcp_btn.place(**export_as_fcp_btn)
+
+
+  def process_fcpxml(self):
+    if self.format_val.get() == 'compound':
+      return to_fcpxml_compound_clips(self.cuts, self.v)
+    if self.format_val.get() == 'markers':
+      return to_fcpxml_markers(self.cuts, self.v)
+    return to_fcpxml_clips(self.cuts, self.v)
+
+
+  def render_export_as_csv_btn(self):
+    def on_click():
+      if not self.cuts:
+        messagebox.showinfo('No cuts found', 'No scene changes were detected')
+      else:
+        csv = to_csv_clips(self.cuts, self.v.duration)
+        self.root.after(0, lambda: save_csv(csv, self.v.path.with_suffix('.csv').name))
+
+    self.export_as_csv_btn = ttk.Button(
+      self.root,
+      text='Export as CSV',
+      command=on_click)
+    self.export_as_csv_btn.place(**export_as_csv_btn)
+
+  def render_hint_warning(self):
+    self.hint_warning = ttk.Label(
+      self.root,
+      text='Your Library must have an event called "fcpscene" (for compound clips)')
+    self.hint_warning.place(**hint_warning)
+
+  def handle_hint_warning(self, visible):
+    if visible:
+      self.hint_warning.place(**hint_warning)
+    else:
+      self.hint_warning.place_forget()
 
   def render_progress_label(self):
     self.n_cuts = tk.IntVar()
@@ -242,7 +314,8 @@ class GUI:
 
   def update_progress_canvas(self, progress: float):
     self.progress_canvas.delete('all')
-    self.progress_canvas.create_rectangle(0, 0, progress_width * progress, progress_height, fill=progress_color, outline='')
+    self.progress_canvas.create_rectangle(0, 0, progress_width * progress, progress_height, fill=progress_color,
+                                          outline='')
     for cut in self.cuts:
       x = cut / self.v.duration * progress_width
       self.progress_canvas.create_line(x, 0, x, progress_height, fill=progress_cut_color, width=1)
@@ -264,37 +337,57 @@ class GUI:
       try:
         v = self.v
         self.running = True
-        self.run_stop_button.config(text='Stop and Export')
-        cut_times = detect_scene_cut_times(v, self.bus, sensitivity, PROXY_WIDTH)
-
-        if self.format_val.get() == 'compound':
-          xml = fcpxml_compound_clips(cut_times, v, self.event_name_val.get())
-        elif self.format_val.get() == 'markers':
-          xml = fcpxml_markers(cut_times, v)
-        else:
-          xml = fcpxml_clips(cut_times, v)
-
+        self.on_progress(0, [])
+        self.sensitivity_slider.config(state='disabled')
+        self.run_stop_button.config(text='Stop')
+        self.cuts = []
+        self.cuts = detect_scene_cut_times(v, self.bus, sensitivity, PROXY_WIDTH)
         self.bus.unsubscribe_progress()
-        self.root.after(0, lambda: save_file(xml, Path(video).with_suffix('.fcpxml').name))
       except Exception as e:
         messagebox.showerror('Error', f'{e}')
       finally:
         self.running = False
+        self.sensitivity_slider.config(state='normal')
         self.run_stop_button.config(text='Run')
 
     threading.Thread(target=run, daemon=True).start()
 
 
-def save_file(xml, suggested_filename):
+def save_fcpxml(xml, suggested_filename):
   file = filedialog.asksaveasfilename(
     defaultextension='.fcpxml',
     initialfile=suggested_filename,
     filetypes=[('Final Cut Pro XML', '*.fcpxml')])
   if file:
+    write(xml, file)
+
+
+def save_csv(csv, suggested_filename):
+  file = filedialog.asksaveasfilename(
+    defaultextension='.csv',
+    initialfile=suggested_filename,
+    filetypes=[('CSV', '*.csv')])
+  if file:
+    write(csv, file)
+
+
+def save_and_send(xml):
+  with tempfile.NamedTemporaryFile(suffix='.fcpxml', dir='/tmp', delete=False) as tmp:
+    write(xml, tmp.name)
     try:
-      with open(file, 'w', encoding='utf-8') as f:
-        f.write(xml)
-    except PermissionError as e:
-      messagebox.showerror('Write Error', f'Permission denied:\n{e}')
-    except OSError as e:
-      messagebox.showerror('Write Error', f'Failed to write file:\n{e}')
+      subprocess.run([
+        'open',
+        str(tmp.name)
+      ])
+    except Exception as e:
+      messagebox.showerror('Open FCP Error', f'Failed to send project to Final Cut:\n{e}')
+
+
+def write(txt, filename):
+  try:
+    with open(filename, 'w', encoding='utf-8') as f:
+      f.write(txt)
+  except PermissionError as e:
+    messagebox.showerror('Write Error', f'Permission denied:\n{e}')
+  except Exception as e:
+    messagebox.showerror('Write Error', f'Failed to write file:\n{e}')

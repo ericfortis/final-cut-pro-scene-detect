@@ -12,6 +12,6 @@ site_packages = libexec / f'lib/python{version_info.major}.{version_info.minor}/
 if site_packages.exists():
   path.insert(0, str(site_packages))
 
-from fcpscene.gui import GUI
+from fcpscene.app_gui import GUI
 
 GUI.run()

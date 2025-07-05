@@ -1,9 +1,9 @@
-from .detect_scene_cut_times import CutTimes
 from .video_attr import VideoAttr
 from .cuts_to_clips import cuts_to_clips
+from .detect_scene_cuts import CutTimes
 
 
-def fcpxml_compound_clips(cut_times: CutTimes, v: VideoAttr, event_name: str) -> str:
+def to_fcpxml_compound_clips(cuts: CutTimes, v: VideoAttr) -> str:
   """
   Blades a timeline given cut times in seconds and
   wraps each clip into its own compound clip.
@@ -13,11 +13,11 @@ def fcpxml_compound_clips(cut_times: CutTimes, v: VideoAttr, event_name: str) ->
     files. Likewise, to send them to Apple Compressor for batch processing.
 
     The catch is that that works only when compound clips are visible on the
-    Browser Viewer. So for that we embed an "Event Name", which must exist in
-    the FCP Library before importing the FCPXML.
+    Browser Viewer. So for that we embed an Event called "fcpscene", which must
+    exist in the FCP Library before importing the FCPXML.
   """
 
-  clips = cuts_to_clips(cut_times, v)
+  clips = cuts_to_clips(cuts, v)
 
   xml = f'''<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE fcpxml>
@@ -45,7 +45,7 @@ def fcpxml_compound_clips(cut_times: CutTimes, v: VideoAttr, event_name: str) ->
   xml += f'''
   </resources>
   <library>
-    <event name="{event_name}">
+    <event name="fcpscene">
       <project name="{v.stem}">
         <sequence format="r1" tcStart="0s">
           <spine>'''

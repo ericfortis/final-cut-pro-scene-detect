@@ -3,15 +3,14 @@ import argparse
 from shutil import which
 from pathlib import Path
 
-from fcpscene import __version__, __repo_url__, __description__, PROXY_WIDTH
-from .csv_clips import csv_clips
-from .time_utils import date_mdy
+from fcpscene import __version__, __repo_url__, __description__, PROXY_WIDTH, DEFAULT_SENSITIVITY
 from .video_attr import VideoAttr
 from .event_bus import EventBus
-from .fcpxml_clips import fcpxml_clips
-from .fcpxml_markers import fcpxml_markers
-from .fcpxml_compound_clips import fcpxml_compound_clips
-from .detect_scene_cut_times import detect_scene_cut_times
+from .to_csv_clips import to_csv_clips
+from .to_fcpxml_clips import to_fcpxml_clips
+from .to_fcpxml_markers import to_fcpxml_markers
+from .to_fcpxml_compound_clips import to_fcpxml_compound_clips
+from .detect_scene_cuts import detect_scene_cut_times
 
 
 def main():
@@ -36,7 +35,7 @@ def main():
   parser.add_argument(
     '-s', '--sensitivity',
     type=validate_percent,
-    default=89,
+    default=DEFAULT_SENSITIVITY,
     help='(0-100, default: %(default)s) frame difference percent for detecting scene changes'
   )
   parser.add_argument(
@@ -50,12 +49,7 @@ def main():
     help='(default: <video-dir>/<video-name>.fcpxml) Name of the output .fcpxml or .csv file'
   )
   parser.add_argument(
-    '-e', '--event-name',
-    default=date_mdy(),
-    help='Existing event name. Defaults to today’s date (e.g. %(default)s), which matches the default event in new libraries'
-  )
-  parser.add_argument(
-    '-f', '--format',
+    '-m', '--mode',
     default='compound-clips',
     choices=['compound-clips', 'clips', 'markers'],
     help=(
@@ -72,37 +66,38 @@ def main():
     exit_error('Invalid output format')
 
   v = VideoAttr(args.video.name)
-  if v.error: exit_error(v.error)
+  if v.error:
+    exit_error(v.error)
 
   print(v.summary)
-
   bus = EventBus()
   bus.subscribe_progress(print_progress)
-  cuts = []
   try:
     cuts = detect_scene_cut_times(v, bus, args.sensitivity, args.proxy_width)
-    if not cuts: exit_error('No scene changes found')
+    if cuts:
+      process_cuts(cuts, v, args.mode, args.output)
+    else:
+      exit_error('No scene changes found')
   except Exception as e:
     exit_error(f'Unexpected error while running ffmpeg: {e}')
 
-  if args.output and args.output.endswith('.csv'):
-    txt = csv_clips(cuts, v.duration)
-    output_file = args.output
-  elif args.format == 'clips':
-    txt = fcpxml_clips(cuts, v)
-    output_file = args.output or v.path.with_suffix('.fcpxml')
-  elif args.format == 'markers':
-    txt = fcpxml_markers(cuts, v)
-    output_file = args.output or v.path.with_suffix('.fcpxml')
+
+def process_cuts(cuts, v, mode, out_file):
+  if out_file and out_file.endswith('.csv'):
+    txt = to_csv_clips(cuts, v.duration)
+  elif mode == 'clips':
+    txt = to_fcpxml_clips(cuts, v)
+  elif mode == 'markers':
+    txt = to_fcpxml_markers(cuts, v)
   else:
-    txt = fcpxml_compound_clips(cuts, v, args.event_name)
-    output_file = args.output or v.path.with_name(f'{v.stem}-Event-{args.event_name}.fcpxml')
+    txt = to_fcpxml_compound_clips(cuts, v)
 
   try:
-    Path(output_file).write_text(txt, encoding='utf-8')
-    print(f'\n💾 file://{Path(output_file).resolve()}')
-  except (OSError, IOError) as e:
-    exit_error(f'Failed to write to {output_file}: {e}')
+    out_file = Path(out_file or v.path.with_suffix('.fcpxml'))
+    out_file.write_text(txt, encoding='utf-8')
+    print(f'\n💾 file://{out_file.resolve()}')
+  except Exception as e:
+    exit_error(f'Failed to write to {out_file}: {e}')
 
 
 def validate_percent(value):
