@@ -1,30 +1,42 @@
 import re
-import sys
 from signal import SIGINT
 from subprocess import Popen, PIPE
 
 from .event_bus import EventBus
 
 
-def detect_scene_cut_times(video, video_duration, bus: EventBus, sensitivity, proxy_width) -> list[float]:
+CutTimes = list[float]
+"""Seconds where scene changes were detected"""
+
+
+def detect_scene_cut_times(v, bus, sensitivity, proxy_width) -> CutTimes:
+  """
+  Finds the timestamps of scene changes using FFmpeg
+
+  Video filter chain:
+    - `scale`: For speed. Downscales video to `proxy_width` in aspect ratio
+    - `select`: if scene-change-probability > threshold
+    - `metadata`: Writes to stderr the selected frame timestamp
+
+  Args:
+      v (VideoAttr):
+      bus (EventBus): PubSub for listening to a UI stop signal and reporting progress
+      sensitivity (float): 0 to 100; inversely mapped to the scene-change threshold
+      proxy_width (int): Width in pixels for downscaling video before processing
+  """
+
   cut_time_regex = re.compile(r'Parsed_metadata.*pts_time:(\d+\.?\d*)')
 
-  # ffmpeg’s video filters write to stderr. The metadata we need for the cut times is there.
   cmd = [
-    'ffmpeg', '-nostats', '-hide_banner', '-an',
-    '-i', video,
-
+    'ffmpeg',
+    '-an',  # Don’t process audio
+    '-i', v.path,
     '-vf', ','.join([
       f'scale={proxy_width}:-1',
-      f"select='gt(scene, {1 - sensitivity / 100})'",  # select when cut probability is greater than `threshold`
+      f"select='gt(scene, {1 - sensitivity / 100})'",
       'metadata=print'
     ]),
-
-    # ensure the natural frame timing is not changed by the `scene` filter (Not sure if it’s really needed)
-    '-fps_mode', 'vfr',
-
-    '-f', 'null',  # null-muxer for discarding processed video
-    '-'  # output to stdout (needed although the null-muxer outputs nothing)
+    '-f', 'null', '-',  # Don’t generate an output video (null muxer)
   ]
 
   cuts = []
@@ -48,7 +60,7 @@ def detect_scene_cut_times(video, video_duration, bus: EventBus, sensitivity, pr
           try:
             cut_time = float(match.group(1))
             cuts.append(cut_time)
-            bus.emit_progress(cut_time / video_duration, cuts)
+            bus.emit_progress(cut_time / v.duration, cuts)
           except ValueError:
             pass
 
@@ -56,15 +68,15 @@ def detect_scene_cut_times(video, video_duration, bus: EventBus, sensitivity, pr
       bus.emit_progress(1, cuts)
 
       if not stopped_from_ui and process.returncode != 0:
-        raise RuntimeError(f'\nffmpeg exited with code {process.returncode}:\n' + ''.join(stderr_buffer))
+        raise RuntimeError(f'ffmpeg exited with code {process.returncode}:\n' + ''.join(stderr_buffer))
 
-  except KeyboardInterrupt:  # Ctrl+C terminates analysis, and we create a file with the progress so far
+      return cuts
+
+  # Ctrl+C terminates analysis, and we create a file with the progress so far
+  except KeyboardInterrupt:
     if process:
       process.terminate()
-  except Exception as e:
-    sys.stderr.write(f'\nUnexpected error while running ffmpeg: {e}\n')
-    sys.exit(1)
+  except Exception:
+    raise
   finally:
     bus.unsubscribe_stop()
-
-  return cuts

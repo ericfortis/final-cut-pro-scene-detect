@@ -1,7 +1,16 @@
 from datetime import date
 
 
-def format_seconds(seconds: float, n_decimals: int = 2) -> str:
+def format_seconds(seconds: float, max_decimals: int = 2) -> str:
+  """
+  Seconds to string 9h9m9s
+
+  Examples:
+      >>> format_seconds(1.1)
+      '1.1s'
+      >>> format_seconds(3661, 2)
+      '1h1m1.00s'
+  """
   int_seconds = int(seconds)
   partial_seconds = seconds % 60
   minutes = (int_seconds % 3600) // 60
@@ -12,15 +21,29 @@ def format_seconds(seconds: float, n_decimals: int = 2) -> str:
   if minutes:
     result += f'{minutes}m'
   if partial_seconds or not result:
-    raw = f'{partial_seconds:.{n_decimals}f}'
-    cleaned = clean_decimals(raw) or '0'
-    result += f'{cleaned}s'
+    result += f'{clean_decimals(f'{partial_seconds:.{max_decimals}f}')}s'
   return result
 
 
 def clean_decimals(number) -> str:
-  return str(number).rstrip('0').rstrip('.')
+  """
+  Removes trailing zeros and a trailing decimal point
+
+  Examples:
+      >>> clean_decimals(3.1400)
+      '3.14'
+      >>> clean_decimals(5.0)
+      '5'
+  """
+  return str(number).rstrip('0').rstrip('.') or '0'
 
 
 def date_mdy() -> str:
+  """
+  Returns today's date formatted as M-D-YY (no leading zeros)
+
+  Example:
+    >>> date_mdy()
+    '1-30-25'
+  """
   return date.today().strftime('%-m-%-d-%y')

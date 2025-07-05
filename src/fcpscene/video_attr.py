@@ -22,16 +22,14 @@ class FFProbe:
 
 
 class VideoAttr(FFProbe):
-  def __init__(self, video: str):
+  def __init__(self, video: str | Path):
     self._runtime_error = None
 
-    self.path = video
+    self.path = Path(video)
+    self.stem = self.path.stem
+
     self.parse(fields(FFProbe))
-
     if not self.error:
-      self.name = str(Path(video).name)
-      self.stem = str(Path(video).stem)
-
       self.width = int(self.width)
       self.height = int(self.height)
       self.duration = float(self.duration)
@@ -60,7 +58,7 @@ class VideoAttr(FFProbe):
 
   @property
   def file_uri(self):
-    return 'file://' + quote(str(Path(self.path).resolve()))
+    return 'file://' + quote(str(self.path.resolve()))
 
   @property
   def fcp_color_space(self) -> str:
@@ -93,8 +91,6 @@ class VideoAttr(FFProbe):
       out = subprocess.check_output(cmd, stderr=subprocess.PIPE).decode('utf-8')
       stream = json.loads(out).get('streams', [{}])[0]
       return {attr: stream.get(attr, '') for attr in attrs}
-    except subprocess.CalledProcessError as e:
-      self._runtime_error = (e.stderr or b'').decode('utf-8', errors='replace').strip()
     except Exception as e:
       self._runtime_error = f'Unexpected error while running ffprobe: {e}'
     return {}

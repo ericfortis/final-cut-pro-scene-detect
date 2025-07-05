@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 
+# TODO event name only needed when compound clip (disable it?, or no hint)
+# TODO export to csv,
+# TODO check dep in UI
+# TODO handle no scenes detected
+
+
 import sys
+
+from .fcpxml_markers import fcpxml_markers
 
 try:
   import tkinter as tk
@@ -19,7 +27,7 @@ from .event_bus import EventBus
 from .video_attr import VideoAttr
 from .fcpxml_clips import fcpxml_clips
 from .fcpxml_compound_clips import fcpxml_compound_clips
-from .detect_scene_cut_times import detect_scene_cut_times
+from .detect_scene_cut_times import detect_scene_cut_times, CutTimes
 
 
 video_label = dict(x=30, y=25)
@@ -226,7 +234,7 @@ class GUI:
     self.progress.set(progress * 100)
     self.progress_label.set(f'{int(progress * 100)}% (Cuts {n_cuts})')
 
-  def on_progress(self, progress: float, cuts: list[float]):
+  def on_progress(self, progress: float, cuts: CutTimes):
     self.cuts = cuts
     self.set_progress_label(progress, len(cuts))
     self.update_progress_canvas(progress)
@@ -257,10 +265,12 @@ class GUI:
         v = self.v
         self.running = True
         self.run_stop_button.config(text='Stop and Export')
-        cut_times = detect_scene_cut_times(v.path, v.duration, self.bus, sensitivity, PROXY_WIDTH)
+        cut_times = detect_scene_cut_times(v, self.bus, sensitivity, PROXY_WIDTH)
 
         if self.format_val.get() == 'compound':
           xml = fcpxml_compound_clips(cut_times, v, self.event_name_val.get())
+        elif self.format_val.get() == 'markers':
+          xml = fcpxml_markers(cut_times, v)
         else:
           xml = fcpxml_clips(cut_times, v)
 

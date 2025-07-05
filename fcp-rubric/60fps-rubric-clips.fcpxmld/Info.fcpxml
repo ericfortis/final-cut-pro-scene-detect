@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE fcpxml>
+
+<fcpxml version="1.13">
+    <resources>
+        <format id="r1" name="FFVideoFormat1080p60" frameDuration="100/6000s" width="1920" height="1080" colorSpace="1-1-1 (Rec. 709)"/>
+        <asset id="r2" name="60fps" uid="69623AF9B7FAD0FB543C8B0823A62B56" start="0s" duration="30s" hasVideo="1" format="r1" videoSources="1">
+            <media-rep kind="original-media" sig="69623AF9B7FAD0FB543C8B0823A62B56" src="file:///Users/efortis/work/final-cut-pro-scene-detect/tests/fixtures/60fps.mp4">
+                <bookmark>Ym9va3wDAAAAAAQQMAAAAB9Z7vR5Kwxyj2OpLcj4gUCukF4bLQDfdIcoFiKQu+zlVAIAAAQAAAADAwAAABgAKAUAAAABAQAAVXNlcnMAAAAHAAAAAQEAAGVmb3J0aXMABAAAAAEBAAB3b3JrGgAAAAEBAABmaW5hbC1jdXQtcHJvLXNjZW5lLWRldGVjdAAABQAAAAEBAAB0ZXN0cwAAAAgAAAABAQAAZml4dHVyZXMJAAAAAQEAADYwZnBzLm1wNAAAABwAAAABBgAAEAAAACAAAAAwAAAAPAAAAGAAAABwAAAAgAAAAAgAAAAEAwAAZEIAAAAAAAAIAAAABAMAAFUiBAAAAAAACAAAAAQDAADYoQ4AAAAAAAgAAAAEAwAAltdxAAAAAAAIAAAABAMAAPvXcQAAAAAACAAAAAQDAAChtIkAAAAAAAgAAAAEAwAAF1KKAAAAAAAcAAAAAQYAALgAAADIAAAA2AAAAOgAAAD4AAAACAEAABgBAAAIAAAAAAQAAEHHDHh/3ArgGAAAAAECAAABAAAAAAAAAA8AAAAAAAAAAAAAAAAAAAAAAAAAAQUAAAQAAAADAwAACAAAAAQAAAADAwAABQAAAAgAAAAEAwAABQAAAAAAAAAEAAAAAwMAAPUBAAAIAAAAAQkAAGZpbGU6Ly8vDAAAAAEBAABNYWNpbnRvc2ggSEQIAAAABAMAAABQoRtzAAAACAAAAAAEAABBxuOahQAAACQAAAABAQAAMDlDMEFDMEQtQkNFMC00REY5LUE0ODktMTM0RkQ3NkQ3MUE3GAAAAAECAACBAAAAAQAAAO8TAAABAAAAAAAAAAAAAAABAAAAAQEAAC8AAADwAAAA/v///wEAAAAAAAAAEwAAAAQQAACUAAAAAAAAAAUQAAAoAQAAAAAAABAQAABcAQAAAAAAAEAQAABMAQAAAAAAAFQQAACEAQAAAAAAAFUQAACQAQAAAAAAAFYQAAB8AQAAAAAAAAIgAABIAgAAAAAAAAUgAAC4AQAAAAAAABAgAADIAQAAAAAAABEgAAD8AQAAAAAAABIgAADcAQAAAAAAABMgAADsAQAAAAAAACAgAAAoAgAAAAAAADAgAAB8AQAAAAAAAAHAAACcAQAAAAAAABHAAAAgAAAAAAAAABLAAACsAQAAAAAAABDQAAAEAAAAAAAAAA==</bookmark>
+            </media-rep>
+            <metadata>
+                <md key="com.apple.proapps.studio.rawToLogConversion" value="0"/>
+                <md key="com.apple.proapps.spotlight.kMDItemProfileName" value="HD (1-1-1)"/>
+                <md key="com.apple.proapps.studio.cameraISO" value="0"/>
+                <md key="com.apple.proapps.studio.cameraColorTemperature" value="0"/>
+                <md key="com.apple.proapps.spotlight.kMDItemCodecs">
+                    <array>
+                        <string>Lavc61.19.101 libx264</string>
+                    </array>
+                </md>
+                <md key="com.apple.proapps.mio.ingestDate" value="2025-07-05 16:15:04 -0400"/>
+            </metadata>
+        </asset>
+    </resources>
+    <library location="file:///Users/efortis/Movies/Untitled.fcpbundle/">
+        <event name="rubric-event" uid="B66E63E7-41C6-4EF4-931A-C447C39DAC1A">
+            <project name="60fps-rubric-clips" uid="42BD2319-7E84-4F22-9934-6A848FFC9A26" modDate="2025-07-05 16:15:41 -0400">
+                <sequence format="r1" duration="30s" tcStart="0s" tcFormat="NDF" audioLayout="stereo" audioRate="48k">
+                    <spine>
+                        <asset-clip ref="r2" offset="0s" name="60fps" duration="5s" tcFormat="NDF"/>
+                        <asset-clip ref="r2" offset="5s" name="60fps" start="5s" duration="5s" tcFormat="NDF"/>
+                        <asset-clip ref="r2" offset="10s" name="60fps" start="10s" duration="5s" tcFormat="NDF"/>
+                        <asset-clip ref="r2" offset="15s" name="60fps" start="15s" duration="5s" tcFormat="NDF"/>
+                        <asset-clip ref="r2" offset="20s" name="60fps" start="20s" duration="5s" tcFormat="NDF"/>
+                        <asset-clip ref="r2" offset="25s" name="60fps" start="25s" duration="5s" tcFormat="NDF"/>
+                    </spine>
+                </sequence>
+            </project>
+        </event>
+        <smart-collection name="Projects" match="all">
+            <match-clip rule="is" type="project"/>
+        </smart-collection>
+        <smart-collection name="All Video" match="any">
+            <match-media rule="is" type="videoOnly"/>
+            <match-media rule="is" type="videoWithAudio"/>
+        </smart-collection>
+        <smart-collection name="Audio Only" match="all">
+            <match-media rule="is" type="audioOnly"/>
+        </smart-collection>
+        <smart-collection name="Stills" match="all">
+            <match-media rule="is" type="stills"/>
+        </smart-collection>
+        <smart-collection name="Favorites" match="all">
+            <match-ratings value="favorites"/>
+        </smart-collection>
+    </library>
+</fcpxml>

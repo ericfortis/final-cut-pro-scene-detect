@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE fcpxml>
+
+<fcpxml version="1.13">
+    <resources>
+        <format id="r1" name="FFVideoFormat1080p60" frameDuration="100/6000s" width="1920" height="1080" colorSpace="1-1-1 (Rec. 709)"/>
+        <media id="r2" name="60fps-rubric-compound-clips Clip" uid="26ntfGFxQL+VGT5fhd6riQ" modDate="2025-07-05 16:16:10 -0400">
+            <sequence format="r1" duration="5s" tcStart="0s" tcFormat="NDF" audioLayout="stereo" audioRate="48k">
+                <spine>
+                    <asset-clip ref="r3" offset="0s" name="60fps" duration="5s" tcFormat="NDF"/>
+                </spine>
+            </sequence>
+        </media>
+        <asset id="r3" name="60fps" uid="69623AF9B7FAD0FB543C8B0823A62B56" start="0s" duration="30s" hasVideo="1" format="r1" videoSources="1">
+            <media-rep kind="original-media" sig="69623AF9B7FAD0FB543C8B0823A62B56" src="file:///Users/efortis/work/final-cut-pro-scene-detect/tests/fixtures/60fps.mp4">
+                <bookmark>Ym9va3wDAAAAAAQQMAAAAJylVpGuGtqPXD1h20AVHBOUPKzQSddWvOyqLQbS7XGIVAIAAAQAAAADAwAAABgAKAUAAAABAQAAVXNlcnMAAAAHAAAAAQEAAGVmb3J0aXMABAAAAAEBAAB3b3JrGgAAAAEBAABmaW5hbC1jdXQtcHJvLXNjZW5lLWRldGVjdAAABQAAAAEBAAB0ZXN0cwAAAAgAAAABAQAAZml4dHVyZXMJAAAAAQEAADYwZnBzLm1wNAAAABwAAAABBgAAEAAAACAAAAAwAAAAPAAAAGAAAABwAAAAgAAAAAgAAAAEAwAAZEIAAAAAAAAIAAAABAMAAFUiBAAAAAAACAAAAAQDAADYoQ4AAAAAAAgAAAAEAwAAltdxAAAAAAAIAAAABAMAAPvXcQAAAAAACAAAAAQDAAChtIkAAAAAAAgAAAAEAwAAF1KKAAAAAAAcAAAAAQYAALgAAADIAAAA2AAAAOgAAAD4AAAACAEAABgBAAAIAAAAAAQAAEHHDHh/3ArgGAAAAAECAAABAAAAAAAAAA8AAAAAAAAAAAAAAAAAAAAAAAAAAQUAAAQAAAADAwAACAAAAAQAAAADAwAABQAAAAgAAAAEAwAABQAAAAAAAAAEAAAAAwMAAPUBAAAIAAAAAQkAAGZpbGU6Ly8vDAAAAAEBAABNYWNpbnRvc2ggSEQIAAAABAMAAABQoRtzAAAACAAAAAAEAABBxuOahQAAACQAAAABAQAAMDlDMEFDMEQtQkNFMC00REY5LUE0ODktMTM0RkQ3NkQ3MUE3GAAAAAECAACBAAAAAQAAAO8TAAABAAAAAAAAAAAAAAABAAAAAQEAAC8AAADwAAAA/v///wEAAAAAAAAAEwAAAAQQAACUAAAAAAAAAAUQAAAoAQAAAAAAABAQAABcAQAAAAAAAEAQAABMAQAAAAAAAFQQAACEAQAAAAAAAFUQAACQAQAAAAAAAFYQAAB8AQAAAAAAAAIgAABIAgAAAAAAAAUgAAC4AQAAAAAAABAgAADIAQAAAAAAABEgAAD8AQAAAAAAABIgAADcAQAAAAAAABMgAADsAQAAAAAAACAgAAAoAgAAAAAAADAgAAB8AQAAAAAAAAHAAACcAQAAAAAAABHAAAAgAAAAAAAAABLAAACsAQAAAAAAABDQAAAEAAAAAAAAAA==</bookmark>
+            </media-rep>
+            <metadata>
+                <md key="com.apple.proapps.studio.rawToLogConversion" value="0"/>
+                <md key="com.apple.proapps.spotlight.kMDItemProfileName" value="HD (1-1-1)"/>
+                <md key="com.apple.proapps.studio.cameraISO" value="0"/>
+                <md key="com.apple.proapps.studio.cameraColorTemperature" value="0"/>
+                <md key="com.apple.proapps.spotlight.kMDItemCodecs">
+                    <array>
+                        <string>Lavc61.19.101 libx264</string>
+                    </array>
+                </md>
+                <md key="com.apple.proapps.mio.ingestDate" value="2025-07-05 16:15:04 -0400"/>
+            </metadata>
+        </asset>
+        <media id="r4" name="60fps-rubric-compound-clips Clip 1" uid="H6+RhdrsR3acug+O6cbNOQ" modDate="2025-07-05 16:16:12 -0400">
+            <sequence format="r1" duration="5s" tcStart="0s" tcFormat="NDF" audioLayout="stereo" audioRate="48k">
+                <spine>
+                    <asset-clip ref="r3" offset="0s" name="60fps" start="5s" duration="5s" tcFormat="NDF"/>
+                </spine>
+            </sequence>
+        </media>
+        <media id="r5" name="60fps-rubric-compound-clips Clip 2" uid="4XWk/K6rT2Kjys0czYAcsQ" modDate="2025-07-05 16:16:14 -0400">
+            <sequence format="r1" duration="5s" tcStart="0s" tcFormat="NDF" audioLayout="stereo" audioRate="48k">
+                <spine>
+                    <asset-clip ref="r3" offset="0s" name="60fps" start="10s" duration="5s" tcFormat="NDF"/>
+                </spine>
+            </sequence>
+        </media>
+        <media id="r6" name="60fps-rubric-compound-clips Clip 3" uid="gSs4yk6SSUWfrRehy9lFGA" modDate="2025-07-05 16:16:16 -0400">
+            <sequence format="r1" duration="5s" tcStart="0s" tcFormat="NDF" audioLayout="stereo" audioRate="48k">
+                <spine>
+                    <asset-clip ref="r3" offset="0s" name="60fps" start="15s" duration="5s" tcFormat="NDF"/>
+                </spine>
+            </sequence>
+        </media>
+        <media id="r7" name="60fps-rubric-compound-clips Clip 4" uid="Wq2ZVv8ZS/WJ2thWkTeAgA" modDate="2025-07-05 16:16:18 -0400">
+            <sequence format="r1" duration="5s" tcStart="0s" tcFormat="NDF" audioLayout="stereo" audioRate="48k">
+                <spine>
+                    <asset-clip ref="r3" offset="0s" name="60fps" start="20s" duration="5s" tcFormat="NDF"/>
+                </spine>
+            </sequence>
+        </media>
+        <media id="r8" name="60fps-rubric-compound-clips Clip 5" uid="P/1Ni5c8SouEeUbdQ9OHNQ" modDate="2025-07-05 16:16:21 -0400">
+            <sequence format="r1" duration="5s" tcStart="0s" tcFormat="NDF" audioLayout="stereo" audioRate="48k">
+                <spine>
+                    <asset-clip ref="r3" offset="0s" name="60fps" start="25s" duration="5s" tcFormat="NDF"/>
+                </spine>
+            </sequence>
+        </media>
+    </resources>
+    <library location="file:///Users/efortis/Movies/Untitled.fcpbundle/">
+        <event name="rubric-event" uid="B66E63E7-41C6-4EF4-931A-C447C39DAC1A">
+            <project name="60fps-rubric-compound-clips" uid="3508D78C-01CF-4930-9D6D-83810B508283" modDate="2025-07-05 16:16:21 -0400">
+                <sequence format="r1" duration="30s" tcStart="0s" tcFormat="NDF" audioLayout="stereo" audioRate="48k">
+                    <spine>
+                        <ref-clip ref="r2" offset="0s" name="60fps-rubric-compound-clips Clip" duration="5s"/>
+                        <ref-clip ref="r4" offset="5s" name="60fps-rubric-compound-clips Clip 1" duration="5s"/>
+                        <ref-clip ref="r5" offset="10s" name="60fps-rubric-compound-clips Clip 2" duration="5s"/>
+                        <ref-clip ref="r6" offset="15s" name="60fps-rubric-compound-clips Clip 3" duration="5s"/>
+                        <ref-clip ref="r7" offset="20s" name="60fps-rubric-compound-clips Clip 4" duration="5s"/>
+                        <ref-clip ref="r8" offset="25s" name="60fps-rubric-compound-clips Clip 5" duration="5s"/>
+                    </spine>
+                </sequence>
+            </project>
+        </event>
+        <smart-collection name="Projects" match="all">
+            <match-clip rule="is" type="project"/>
+        </smart-collection>
+        <smart-collection name="All Video" match="any">
+            <match-media rule="is" type="videoOnly"/>
+            <match-media rule="is" type="videoWithAudio"/>
+        </smart-collection>
+        <smart-collection name="Audio Only" match="all">
+            <match-media rule="is" type="audioOnly"/>
+        </smart-collection>
+        <smart-collection name="Stills" match="all">
+            <match-media rule="is" type="stills"/>
+        </smart-collection>
+        <smart-collection name="Favorites" match="all">
+            <match-ratings value="favorites"/>
+        </smart-collection>
+    </library>
+</fcpxml>
