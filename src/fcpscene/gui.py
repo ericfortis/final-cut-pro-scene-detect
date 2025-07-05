@@ -2,8 +2,6 @@
 
 import sys
 
-from .fcpxml_compound_clips import fcpxml_compound_clips
-
 try:
   import tkinter as tk
 except ImportError:
@@ -20,6 +18,7 @@ from .time_utils import date_mdy
 from .event_bus import EventBus
 from .video_attr import VideoAttr
 from .fcpxml_clips import fcpxml_clips
+from .fcpxml_compound_clips import fcpxml_compound_clips
 from .detect_scene_cut_times import detect_scene_cut_times
 
 

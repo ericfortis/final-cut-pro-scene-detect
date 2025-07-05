@@ -12,8 +12,6 @@ from .fcpxml_compound_clips import fcpxml_compound_clips
 from .detect_scene_cut_times import detect_scene_cut_times
 
 # TODO export to csv,
-# TODO UI show cuts as timeline
-# TODO UI checkbox compound
 # TODO check dep in UI
 
 def main():
