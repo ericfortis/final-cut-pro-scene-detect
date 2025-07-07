@@ -1,23 +1,16 @@
 #!/usr/bin/env python3
 
-import sys
-
-try:
-  import tkinter as tk
-except ImportError:
-  tk = None
-  print('ERROR: tkinter not found')
-  sys.exit(1)
-
 import tempfile
 import threading
 import subprocess
 import webbrowser
+import tkinter as tk
 from shutil import which
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 
 from fcpscene import __version__, __repo_url__, __title__, PROXY_WIDTH, DEFAULT_SENSITIVITY
+from .ffmpeg import ffmpeg, ffprobe
 from .event_bus import EventBus
 from .video_attr import VideoAttr
 from .to_csv_clips import to_csv_clips
@@ -66,9 +59,9 @@ class GUI:
 
   @staticmethod
   def check_dependencies():
-    if not which('ffmpeg'):
+    if not which(ffmpeg):
       messagebox.showerror('Error', 'Dependency "ffmpeg" not found')
-    elif not which('ffprobe'):
+    elif not which(ffprobe):
       messagebox.showerror('Error', 'Dependency "ffprobe" not found')
 
   def __init__(self, root):
@@ -187,6 +180,7 @@ class GUI:
 
     def on_format_change(*args):
       self.handle_hint_warning(visible=self.format_val.get() == 'compound')
+
     self.format_val.trace_add('write', on_format_change)
 
     ttk.Radiobutton(

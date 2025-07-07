@@ -1,6 +1,8 @@
-# Final Cut Pro Scene Detect (fcpscene)
+# fcpscene
 
-This program detects scene changes in videos and generates a Final Cut Pro
+## Final Cut Pro Scene Detector
+
+This program finds scene changes in videos and generates a Final Cut Pro
 project with cuts at those scene changes, using either compound or normal clips.
 
 ![](README-gui.png)
@@ -50,9 +52,16 @@ brew tap ericfortis/fcpscene
 brew install fcpscene
 ```
 
-That will install two programs. They do the same thing.
-- `fcpscene-gui` graphical user interface
-- `fcpscene` command-line (for batch processing)
+On your Desktop, you’ll see the **fcpscene.app**, which
+you can drag to your Applications folder.
+
+<img src="fcpscene.app/icon.svg" width="60"/>
+
+If that doesn’t work, try typing this in the Terminal:
+
+```shell
+fcpscene --gui
+```
 
 
 ## Before Running
@@ -102,9 +111,10 @@ After the project is loaded in Final Cut you can delete the exported `.fcpxml` f
 
 <br>
 
+## Command-Line Program
 
 <details>
-<summary><strong>How to run the command-line program?</strong></summary>
+<summary>Details</summary>
 
 ## Running the command-line</h2>
 

@@ -6,6 +6,7 @@ from urllib.parse import quote
 from collections.abc import Sequence
 
 from .utils import format_seconds, clean_decimals
+from .ffmpeg import ffprobe
 
 # TODO FCP actually uses frameDuration="100/6000s", we 1/60, think about this
 
@@ -97,7 +98,7 @@ class VideoAttr(FFProbe):
 
   def ffprobe(self, *attrs) -> dict[str, str]:
     cmd = [
-      'ffprobe',
+      ffprobe,
       '-v', 'error',
       '-select_streams', 'v:0',
       '-show_entries', f'stream={','.join(attrs)}',

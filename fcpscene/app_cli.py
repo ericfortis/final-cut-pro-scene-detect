@@ -1,9 +1,12 @@
+#!/usr/bin/env python3
+
 import sys
 import argparse
 from shutil import which
 from pathlib import Path
 
 from fcpscene import __version__, __repo_url__, __description__, PROXY_WIDTH, DEFAULT_SENSITIVITY
+from .ffmpeg import ffmpeg, ffprobe
 from .video_attr import VideoAttr
 from .event_bus import EventBus
 from .to_csv_clips import to_csv_clips
@@ -12,10 +15,9 @@ from .to_fcpxml_markers import to_fcpxml_markers
 from .to_fcpxml_compound_clips import to_fcpxml_compound_clips
 from .detect_scene_cuts import detect_scene_cut_times
 
-
 def main():
-  check_dependency('ffmpeg')
-  check_dependency('ffprobe')
+  check_dependency(ffmpeg)
+  check_dependency(ffprobe)
 
   parser = argparse.ArgumentParser(
     description=__description__,
@@ -25,12 +27,18 @@ def main():
   parser.add_argument(
     'video',
     type=argparse.FileType('r'),
+    nargs='?',
     help='Path to the input video file'
   )
   parser.add_argument(
     '-v', '--version',
     action='version',
     version=__version__
+  )
+  parser.add_argument(
+    '--gui',
+    action='store_true',
+    help='Open the GUI instead of running in CLI mode'
   )
   parser.add_argument(
     '-s', '--sensitivity',
@@ -62,8 +70,16 @@ def main():
   )
   args = parser.parse_args()
 
+  if args.gui:
+    from .app_gui import GUI
+    GUI.run()
+    return
+
+  if args.video is None:
+    parser.error('the following argument is required: video')
+
   if args.output and not args.output.endswith(('.csv', '.fcpxml')):
-    exit_error('Invalid output format')
+    parser.error('Invalid output format. Only .fcpxml and .csv are supported')
 
   v = VideoAttr(args.video.name)
   if v.error:
@@ -130,3 +146,7 @@ def check_dependency(program: str):
 def exit_error(msg: str):
   sys.stderr.write(f'\nERROR: {msg}\n')
   sys.exit(1)
+
+
+if __name__ == '__main__':
+  main()

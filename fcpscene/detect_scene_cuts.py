@@ -2,6 +2,7 @@ import re
 from signal import SIGINT
 from subprocess import Popen, PIPE
 
+from .ffmpeg import ffmpeg
 from .event_bus import EventBus
 
 
@@ -27,7 +28,7 @@ def detect_scene_cut_times(v, bus, sensitivity, proxy_width) -> CutTimes:
   cut_time_regex = re.compile(r'Parsed_metadata.*pts_time:(\d+\.?\d*)')
 
   cmd = [
-    'ffmpeg',
+    ffmpeg,
     '-an',  # Don’t process audio
     '-i', v.path,
     '-vf', ','.join([

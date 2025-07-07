@@ -29,9 +29,9 @@ def to_fcpxml_markers(cuts: CutTimes, v: VideoAttr) -> str:
           <spine>
             <asset-clip ref="r2" offset="0s">'''
 
-  for i, c in enumerate(clips[1:]):
+  for i, c in enumerate(clips[1:], 1):
     xml += f'''
-              <marker start="{c.offset}" duration="{frame_duration}" value="Marker {i + 1}"/>'''
+              <marker start="{c.offset}" duration="{frame_duration}" value="Marker {i}"/>'''
 
   xml += f'''
             </asset-clip>
