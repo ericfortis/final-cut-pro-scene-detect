@@ -20,7 +20,7 @@ def main():
   parser = argparse.ArgumentParser(
     description=__description__,
     epilog=f'{__repo_url__}\nPowered by FFmpeg',
-    formatter_class=argparse.RawDescriptionHelpFormatter)
+    formatter_class=argparse.RawTextHelpFormatter)
 
   parser.add_argument(
     'video',
@@ -55,9 +55,9 @@ def main():
     help=(
       '(default: %(default)s)\n'
       'Options:\n'
-      '  (compound-clips = Wraps each clip in its own compound clip)'
-      '  (clips = Normal clips)'
-      '  (markers = Only add markers)'
+      '    compound-clips: Wraps each clip in its own compound clip\n'
+      '    clips: Normal clips\n'
+      '    markers: Only add markers'
     )
   )
   args = parser.parse_args()
