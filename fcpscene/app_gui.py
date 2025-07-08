@@ -49,12 +49,13 @@ progress_color = '#304ffe'
 progress_cut_color = '#fff'
 progress_canvas = dict(x=30, y=218)
 
+# TODO disable run on invalid video
 
 class GUI:
   @staticmethod
-  def run():
+  def run(video = None):
     root = tk.Tk()
-    GUI(root)
+    GUI(root, video)
     root.mainloop()
 
   @staticmethod
@@ -64,7 +65,7 @@ class GUI:
     elif not which(ffprobe):
       messagebox.showerror('Error', 'Dependency "ffprobe" not found')
 
-  def __init__(self, root):
+  def __init__(self, root, video):
     self.cuts = []
     self.check_dependencies()
     self.v = VideoAttr('')
@@ -82,7 +83,7 @@ class GUI:
 
     self.setup_menus()
 
-    self.render_video_picker()
+    self.render_video_picker(video)
     self.render_format_radio_buttons()
     self.render_sensitivity_slider()
 
@@ -123,7 +124,23 @@ class GUI:
     self.root.config(menu=menubar)
 
 
-  def render_video_picker(self):
+  def render_video_picker(self, initial_video):
+    def load_video(file_path):
+      if not file_path or not Path(file_path).exists():
+        return
+
+      self.initial_dir = str(Path(file_path).parent)
+      self.video_entry.delete(0, tk.END)
+      self.video_entry.insert(0, file_path)
+      self.v = VideoAttr(file_path)
+
+      if self.v.error:
+        messagebox.showerror('Error', self.v.error)
+      else:
+        self.video_hint.configure(text=self.v.summary)
+        self.root.focus_force()
+        self.run_scene_detect()
+
     def browse_file():
       file_path = filedialog.askopenfilename(
         title='Select Video File',
@@ -132,18 +149,7 @@ class GUI:
           ('Final Cut Pro-Compatible Files', '*.mp4 *.mov *.avi *.m4v *.3gp *.3g2 *.mts *.m2ts *.mxf'),
           ('All files', '*.*')
         ])
-      if file_path:
-        self.initial_dir = str(Path(file_path).parent)
-        self.video_entry.delete(0, tk.END)
-        self.video_entry.insert(0, file_path)
-        self.v = VideoAttr(file_path)
-
-        if not self.v.error:
-          self.video_hint.configure(text=self.v.summary)
-          self.root.focus_force()
-          self.run_scene_detect()
-        else:
-          messagebox.showerror('Error', self.v.error)
+      load_video(file_path)
 
     ttk.Label(self.root, text='Video File').place(**video_label)
     self.video_entry = ttk.Entry(self.root)
@@ -151,6 +157,8 @@ class GUI:
     ttk.Button(self.root, text='Browse', command=browse_file).place(**video_browse_btn)
     self.video_hint = ttk.Label(self.root, text='Place video in your Home or Movies directory')
     self.video_hint.place(**video_hint)
+
+    self.root.after(0, lambda: load_video(initial_video))
 
 
   def render_sensitivity_slider(self):

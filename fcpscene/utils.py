@@ -17,7 +17,7 @@ def format_seconds(seconds: float, max_decimals: int = 2) -> str:
   if minutes:
     result += f'{minutes}m'
   if partial_seconds or not result:
-    result += f'{clean_decimals(f'{partial_seconds:.{max_decimals}f}')}s'
+    result += f"{clean_decimals(f'{partial_seconds:.{max_decimals}f}')}s"
   return result
 
 

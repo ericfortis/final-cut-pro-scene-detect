@@ -72,7 +72,7 @@ def main():
 
   if args.gui:
     from .app_gui import GUI
-    GUI.run()
+    GUI.run(args.video.name if args.video else None)
     return
 
   if args.video is None:

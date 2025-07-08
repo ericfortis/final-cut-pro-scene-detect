@@ -29,6 +29,7 @@ def detect_scene_cut_times(v, bus, sensitivity, proxy_width) -> CutTimes:
 
   cmd = [
     ffmpeg,
+    '-hide_banner',
     '-an',  # Don’t process audio
     '-i', v.path,
     '-vf', ','.join([
@@ -68,7 +69,7 @@ def detect_scene_cut_times(v, bus, sensitivity, proxy_width) -> CutTimes:
       bus.emit_progress(1, cuts)
 
       if not stopped_from_ui and process.returncode != 0:
-        raise RuntimeError(f'ffmpeg exited with code {process.returncode}:\n' + ''.join(stderr_buffer))
+        raise RuntimeError(''.join(stderr_buffer))
 
       return cuts
   except KeyboardInterrupt:  # Ctrl+C terminates analysis, and we create a file with the progress so far

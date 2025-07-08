@@ -12,7 +12,7 @@ all: $(OUT)
 $(OUT):
 	osacompile -o $(OUT) $(SRC)/main.applescript
 	cp $(SRC)/Info.plist $(OUT)/Contents/Info.plist
-	cp $(SRC)/applet.icns $(OUT)/Contents/Resources/applet.icns
+	cp $(SRC)/fcpscene.icns $(OUT)/Contents/Resources/fcpscene.icns
 
 install: $(OUT)
 	cp -R $(OUT) $(INSTALL_TO)

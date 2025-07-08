@@ -17,6 +17,7 @@ class FFProbe:
   duration: float = 0
   r_frame_rate: str = ''  # real base '60/1', '30000/1001'=29.97
   codec_name: str = ''
+  codec_type: str = ''
 
   color_trc: str = ''
   colorspace: str = ''
@@ -24,7 +25,7 @@ class FFProbe:
 
 
 class VideoAttr(FFProbe):
-  def __init__(self, video: str | Path):
+  def __init__(self, video):
     self._runtime_error = None
 
     self.path = Path(video)
@@ -45,15 +46,17 @@ class VideoAttr(FFProbe):
 
   @property
   def error(self) -> str:
+    if self.codec_type != 'video': return 'Not a video file'
     if self._runtime_error: return self._runtime_error
     if float(self.duration) <= 0: return 'Cannot process video with zero or unknown duration'
     return ''
+
 
   @property
   def summary(self) -> str:
     return '   '.join([
       f'{self.width}x{self.height}',
-      f'{clean_decimals(f'{self.fps:.2f}')}fps',
+      f'{clean_decimals(f"{self.fps:.2f}")}fps',
       self.pretty_codec_name,
       f'(Duration: {format_seconds(self.duration)})'
     ])
@@ -99,9 +102,9 @@ class VideoAttr(FFProbe):
   def ffprobe(self, *attrs) -> dict[str, str]:
     cmd = [
       ffprobe,
-      '-v', 'error',
+      '-hide_banner',
       '-select_streams', 'v:0',
-      '-show_entries', f'stream={','.join(attrs)}',
+      '-show_entries', f'stream={",".join(attrs)}',
       '-of', 'json',
       self.path
     ]
@@ -110,5 +113,5 @@ class VideoAttr(FFProbe):
       stream = json.loads(out).get('streams', [{}])[0]
       return {attr: stream.get(attr, '') for attr in attrs}
     except Exception as e:
-      self._runtime_error = f'Unexpected error while running ffprobe: {e}'
+      self._runtime_error = f'{e}'
     return {}
