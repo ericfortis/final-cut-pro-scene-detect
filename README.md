@@ -52,13 +52,16 @@ brew tap ericfortis/fcpscene
 brew install fcpscene
 ```
 
-On your Desktop, you’ll see the **fcpscene.app**, which
-you can drag to your Applications folder.
+Then open Finder and Go &rarr; Go to Folder and type:
+
+**/opt/homebrew/opt/fcpscene/**
+
+There you’ll see the **fcpscene.app**, which
+you can move to your Applications folder.
 
 <img src="fcpscene.app/icon.svg" width="60"/>
 
-If that doesn’t work, try typing this in the Terminal:
-
+At any rate, you can always launch it from the Terminal by typing:
 ```shell
 fcpscene --gui
 ```
