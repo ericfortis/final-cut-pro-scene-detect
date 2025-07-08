@@ -61,11 +61,6 @@ you can move to your Applications folder.
 
 <img src="fcpscene.app/icon.svg" width="60"/>
 
-At any rate, you can always launch it from the Terminal by typing:
-```shell
-fcpscene --gui
-```
-
 
 ## Before Running
 
@@ -96,17 +91,21 @@ importing the project. For example, that will happen if your video is in your
 the .fcpxml file is.
 </details>
 
-## Running
-In the Terminal, launch the program by typing:
 
+## Running
+The **fcpscene.app** is a droplet, which means you can drag a video file onto it,
+or right-click the video file and select **Open With** &rarr; **fcpscene.app**
+
+Alternatively, you can launch it from the Terminal by typing:
 ```shell
-fcpscene-gui
+fcpscene --gui
 ```
+
 A 15-minute 4K 60fps video takes about a minute to run on a 14-core M4. You’ll
 see the detected cut times as it runs — if you hit "Stop", you can still export
 a Final Cut Pro project file with the cuts found so far.
 
-The sensitivity should be around 65 to 90%. Start with 88% and increase it if
+The sensitivity should be around 65 to 90%. Start with 85% and increase it if
 it’s missing cuts. By the way, 1-frame cuts are ignored regardless of the
 percent. Note, sensitivity doesn't affect processing speed.
 
@@ -115,6 +114,9 @@ After the project is loaded in Final Cut you can delete the exported `.fcpxml` f
 <br>
 
 ## Command-Line Program
+
+Since the fcpscene.app doesn’t support batch processing, you can use the
+command-line program for that.
 
 <details>
 <summary>Details</summary>
@@ -182,6 +184,19 @@ under the hood, which will max out your CPU cores 🔥.
 
 
 ## Final Cut Pro Tips
+
+<details>
+<summary><strong>Batch Export Compound Clips</strong></summary>
+
+1. Select the all the **Compound Clips** you want to export.
+![](README-tip-fcp-batch-export-1.png)
+
+2. **File** &rarr; **Share N Clips**
+![](README-tip-fcp-batch-export-2.png)
+</details>
+
+<br/>
+
 
 <details>
 <summary><b>Joining Clips</b></summary>
