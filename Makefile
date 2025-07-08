@@ -1,10 +1,11 @@
 SRC = fcpscene.app
 OUT = .fcpscene.app
 
-INSTALL_TO ?= ~/Desktop/fcpscene.app
-# Installing to Desktop because it can't be directly to /Application or
-# ~/Applications due to permissions. Actually, it partially works, because
-# `open -a fcpscene.app` is fine but double-clicking it in Finder is not.
+DESTDIR ?= $(HOME)/Desktop
+INSTALL_TO = $(DESTDIR)/fcpscene.app
+# It can't be directly to /Application or ~/Applications due to permissions.
+# Actually, it partially works, because `open -a fcpscene.app` is fine but
+# double-clicking it in Finder is not.
 
 all: $(OUT)
 
