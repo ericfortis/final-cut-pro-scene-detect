@@ -115,13 +115,13 @@ After the project is loaded in Final Cut you can delete the exported `.fcpxml` f
 
 ## Command-Line Program
 
-Since the fcpscene.app doesn’t support batch processing, you can use the
-command-line program for that.
+The `fcpscene` command line program has more features than the GUI app. Also,
+it’s convenient for batch processing videos.
 
 <details>
 <summary>Details</summary>
 
-## Running the command-line</h2>
+## Example
 
 ```shell
 fcpscene ~/Movies/my-video.mp4
@@ -141,6 +141,7 @@ For the full list of options, type:
 fcpscene --help
 ```
 
+<br/>
 
 #### Output filename
 Default: `<video-dir>/<video-name>.fcpxml` (i.e., in the same directory the video is in)
@@ -148,6 +149,8 @@ Default: `<video-dir>/<video-name>.fcpxml` (i.e., in the same directory the vide
 ```shell
 fcpscene my-video.mp4 --output my-project.fcpxml
 ```
+
+<br/>
 
 #### Sensitivity
 Range: 0-100, Default: **85**
@@ -157,6 +160,8 @@ This value sets the frame difference percentage used to detect scene changes.
 ```shell
 fcpscene --sensitivity 70 my-video.mp4
 ```
+
+<br/>
 
 #### Proxy Width
 Default: **320**
@@ -168,7 +173,13 @@ the video during processing (without modifying the original file).
 fcpscene --proxy-width 240 my-video.mp4
 ```
 
-### Tip: Batch Processing
+<br/>
+
+### Batch Processing
+
+<br/>
+
+#### Generating FCPXML
 
 In the Terminal, you can type a snippet like this to run `fcpscene` on all the
 `.mp4` videos in your 📂`~/Movies` directory excluding subdirectories.
@@ -185,6 +196,51 @@ computer from sleeping while it’s running a task.
 
 Also, keep your computer in a well-ventilated area. `fcpscene` uses `ffmpeg`
 under the hood, which will max out your CPU cores 🔥.
+
+<br/>
+
+#### Counting cuts
+I use this command to check if there are stray frames in single-scene files. For
+example, when retiming with Machine Learning in Compressor, some end up with a
+random frame. So with this script I can print videos with cuts and their count.
+
+```shell
+cd ~/Movies/video_foo
+for f in *.mov; do
+  n_cuts=$(fcpscene --quiet --min-scene-seconds 0 --mode count "$f")
+  if [[ $n_cuts != 0 ]]; then
+    echo "$f" "$n_cuts"
+  fi
+done
+```
+
+Example output:
+```sh
+video_foo_018.mov 1
+video_foo_064.mov 2
+video_foo_073.mov 2
+```
+
+<br/>
+
+
+#### Listing cuts
+Same as above but printing cut times
+
+```shell
+cd ~/Movies/video_foo
+for f in *.mov; do
+  cuts=$(fcpscene -q -mss 0 --mode list "$f")
+  if [[ $cuts ]]; then
+    echo "$f" "$cuts"
+  fi
+done
+```
+```sh
+video_foo_018.mov 0.0166667
+video_foo_064.mov 0.866667 2.066667
+video_foo_073.mov 0.866667 2.066667
+```
 
 </details>
 

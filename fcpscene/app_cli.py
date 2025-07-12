@@ -52,7 +52,7 @@ def main():
     help='(0-100, default: %(default)s) frame difference percent for detecting scene changes'
   )
   parser.add_argument(
-    '-mss', '--min-scene-secs',
+    '-mss', '--min-scene-seconds',
     type=float,
     default=MIN_SCENE_SECS,
     help='(default: %(default)s) ignore scene changes shorter than this duration (in seconds) to avoid noise'
@@ -64,7 +64,7 @@ def main():
   parser.add_argument(
     '-m', '--mode',
     default='compound-clips',
-    choices=['compound-clips', 'clips', 'markers', 'count'],
+    choices=['compound-clips', 'clips', 'markers', 'count', 'list'],
     help=(
       '(default: %(default)s)\n'
       'Options:\n'
@@ -72,6 +72,7 @@ def main():
       '    clips: Normal clips\n'
       '    markers: Only add markers\n'
       '    count: Print cut count (no file is saved)\n'
+      '    list: Print cut times (no file is saved)\n'
     )
   )
   parser.add_argument(
@@ -102,7 +103,7 @@ def main():
     print(v.summary)
     bus.subscribe_progress(print_progress)
   try:
-    stamps = detect_cuts(v, bus, args.sensitivity, args.proxy_width, args.min_scene_secs)
+    stamps = detect_cuts(v, bus, args.sensitivity, args.proxy_width, args.min_scene_seconds)
     process_stamps(stamps, v, args.mode, args.output)
   except Exception as e:
     exit_error(f'Unexpected error while running ffmpeg: {e}')
@@ -110,7 +111,11 @@ def main():
 
 def process_stamps(stamps, v, mode, out_file):
   if mode == 'count':
-    print(f'{len(stamps) - 2}')
+    print(len(stamps) - 2)
+    return
+
+  if mode == 'list':
+    print(*stamps[1:-1])
     return
 
   if out_file and out_file.endswith('.csv'):
