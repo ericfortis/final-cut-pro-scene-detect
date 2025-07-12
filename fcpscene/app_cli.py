@@ -41,6 +41,11 @@ def main():
     help='Open the GUI instead of running in CLI mode'
   )
   parser.add_argument(
+    '-q', '--quiet',
+    action='store_true',
+    help='Do not print progress or video summary'
+  )
+  parser.add_argument(
     '-s', '--sensitivity',
     type=validate_percent,
     default=DEFAULT_SENSITIVITY,
@@ -53,26 +58,27 @@ def main():
     help='(default: %(default)s) ignore scene changes shorter than this duration (in seconds) to avoid noise'
   )
   parser.add_argument(
-    '-w', '--proxy-width',
-    type=int,
-    default=PROXY_WIDTH,
-    help=' (default: %(default)s) width of scaled video used for speeding up analysis'
-  )
-  parser.add_argument(
     '-o', '--output',
     help='(default: <video-dir>/<video-name>.fcpxml) Name of the output .fcpxml or .csv file'
   )
   parser.add_argument(
     '-m', '--mode',
     default='compound-clips',
-    choices=['compound-clips', 'clips', 'markers'],
+    choices=['compound-clips', 'clips', 'markers', 'count'],
     help=(
       '(default: %(default)s)\n'
       'Options:\n'
       '    compound-clips: Wraps each clip in its own compound clip\n'
       '    clips: Normal clips\n'
-      '    markers: Only add markers'
+      '    markers: Only add markers\n'
+      '    count: Print cut count (no file is saved)\n'
     )
+  )
+  parser.add_argument(
+    '-w', '--proxy-width',
+    type=int,
+    default=PROXY_WIDTH,
+    help=' (default: %(default)s) width of scaled video used for speeding up analysis'
   )
   args = parser.parse_args()
 
@@ -91,9 +97,10 @@ def main():
   if v.error:
     exit_error(v.error)
 
-  print(v.summary)
   bus = EventBus()
-  bus.subscribe_progress(print_progress)
+  if not args.quiet:
+    print(v.summary)
+    bus.subscribe_progress(print_progress)
   try:
     stamps = detect_cuts(v, bus, args.sensitivity, args.proxy_width, args.min_scene_secs)
     process_stamps(stamps, v, args.mode, args.output)
@@ -102,6 +109,10 @@ def main():
 
 
 def process_stamps(stamps, v, mode, out_file):
+  if mode == 'count':
+    print(f'{len(stamps) - 2}')
+    return
+
   if out_file and out_file.endswith('.csv'):
     txt = to_csv_clips(stamps)
   elif mode == 'clips':
