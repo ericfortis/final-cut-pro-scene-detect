@@ -1,9 +1,9 @@
 from .video_attr import VideoAttr
-from .cuts_to_clips import cuts_to_clips
-from .detect_scene_cuts import CutTimes
+from .stamps_to_clips import stamps_to_clips
+from .detect_cuts import TimelineStamps
 
 
-def to_fcpxml_compound_clips(cuts: CutTimes, v: VideoAttr) -> str:
+def to_fcpxml_compound_clips(stamps: TimelineStamps, v: VideoAttr) -> str:
   """
   Blades a timeline given cut times in seconds and
   wraps each clip into its own compound clip.
@@ -17,7 +17,7 @@ def to_fcpxml_compound_clips(cuts: CutTimes, v: VideoAttr) -> str:
     exist in the FCP Library before importing the FCPXML.
   """
 
-  clips = cuts_to_clips(cuts, v)
+  clips = stamps_to_clips(stamps, v)
 
   xml = f'''<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE fcpxml>

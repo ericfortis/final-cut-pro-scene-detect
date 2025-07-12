@@ -16,7 +16,7 @@ compound clips.
 ## Motivation
 I wanted to increase the frame rate of old videos using Final Cut’s Optical Flow
 (Machine Learning) interpolation and I faced two main problems. First, it messes
-up scene changes by adding a transition — even if the clips are bladed. Second,
+up scene changes by adding a transition — even if they are bladed. Second,
 it needs hundreds of gigabytes of disk space.
 
 <details>
@@ -134,6 +134,14 @@ file into the Terminal — it will paste the path for you.
 
 
 ### Options
+
+For the full list of options, type:
+
+```shell
+fcpscene --help
+```
+
+
 #### Output filename
 Default: `<video-dir>/<video-name>.fcpxml` (i.e., in the same directory the video is in)
 

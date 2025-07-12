@@ -1,19 +1,18 @@
 from .utils import clean_decimals
-from .detect_scene_cuts import CutTimes
+from .detect_cuts import TimelineStamps
 
 
-def to_csv_clips(cuts: CutTimes, video_duration: float):
+def to_csv_clips(stamps: TimelineStamps) -> str:
   """CSV with one clip per row
 
   Example:
-    >>> to_csv_clips([5, 10], 15.1)
+    >>> to_csv_clips([0, 5, 10, 15])
     start,end
     0,5
     5,10
-    10,15.1
+    10,15
   """
-  clips = [0] + cuts + [video_duration]
   out = ['start,end']
-  for start, end in zip(clips, clips[1:]):
+  for start, end in zip(stamps, stamps[1:]):
     out.append(f'{clean_decimals(start)},{clean_decimals(end)}')
   return '\n'.join(out) + '\n'

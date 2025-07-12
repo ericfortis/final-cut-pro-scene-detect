@@ -6,11 +6,11 @@ from .ffmpeg import ffmpeg
 from .event_bus import EventBus
 
 
-CutTimes = list[float]
-"""Seconds where scene changes were detected"""
+TimelineStamps = list[float]
+"""[Start + [SceneChanges] + End] in seconds"""
 
 
-def detect_scene_cut_times(v, bus, sensitivity, proxy_width) -> CutTimes:
+def detect_cuts(v, bus, sensitivity, proxy_width, min_scene_secs, start_time=0) -> TimelineStamps:
   """Finds the timestamps of scene changes using FFmpeg
 
   Video filter chain:
@@ -23,6 +23,8 @@ def detect_scene_cut_times(v, bus, sensitivity, proxy_width) -> CutTimes:
       bus (EventBus): For listening to a UI stop signal and reporting progress
       sensitivity (float): 0 to 100; inversely mapped to the scene-change threshold
       proxy_width (int): Width in pixels for downscaling video
+      min_scene_secs (float): Ignore scene changes shorter than this duration
+      start_time (float):
   """
 
   cut_time_regex = re.compile(r'Parsed_metadata.*pts_time:(\d+\.?\d*)')
@@ -31,6 +33,7 @@ def detect_scene_cut_times(v, bus, sensitivity, proxy_width) -> CutTimes:
     ffmpeg,
     '-hide_banner',
     '-an',  # Don’t process audio
+    '-ss', str(start_time),
     '-i', v.path,
     '-vf', ','.join([
       f'scale={proxy_width}:-1',
@@ -40,7 +43,7 @@ def detect_scene_cut_times(v, bus, sensitivity, proxy_width) -> CutTimes:
     '-f', 'null', '-',  # Don’t generate an output video
   ]
 
-  cuts = []
+  stamps = [start_time]
   stderr_buffer = []
   stopped_from_ui = False
 
@@ -60,18 +63,20 @@ def detect_scene_cut_times(v, bus, sensitivity, proxy_width) -> CutTimes:
         if match:
           try:
             cut_time = float(match.group(1))
-            cuts.append(cut_time)
-            bus.emit_progress(cut_time / v.duration, cuts)
+            if (cut_time - stamps[-1]) >= min_scene_secs:
+              stamps.append(cut_time)
+              bus.emit_progress(cut_time / v.duration, stamps)
           except ValueError:
             pass
 
       process.wait()
-      bus.emit_progress(1, cuts)
+      stamps.append(v.duration)
+      bus.emit_progress(1, stamps)
 
       if not stopped_from_ui and process.returncode != 0:
         raise RuntimeError(''.join(stderr_buffer))
 
-      return cuts
+      return stamps
   except KeyboardInterrupt:  # Ctrl+C terminates analysis, and we create a file with the progress so far
     if process:
       process.terminate()

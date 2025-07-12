@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from .video_attr import VideoAttr
-from .detect_scene_cuts import CutTimes
+from .detect_cuts import TimelineStamps
 
 
 @dataclass
@@ -20,7 +20,7 @@ class FCPClip:
   duration: str
 
 
-def cuts_to_clips(cuts: CutTimes, v: VideoAttr) -> list[FCPClip]:
+def stamps_to_clips(stamps: TimelineStamps, v: VideoAttr) -> list[FCPClip]:
   """
   Background:
     The clip’s [left and right] edges — `offset` and `offset+duration` — are in
@@ -32,26 +32,21 @@ def cuts_to_clips(cuts: CutTimes, v: VideoAttr) -> list[FCPClip]:
 
     FCP uses incremental reference IDs. `r1` and `r2` are reserved in our templates.
   """
-  first_available_ref_id = 3 # constant
+  first_available_ref_id = 3  # constant
+  seq_digits = len(str(len(stamps)))
 
-  cuts.append(v.duration)
-  seq_digits = len(str(len(cuts)))
+  stamp_frames = [int(s * v.fps + 0.9999) for s in stamps]  # ceil with threshold
 
   clips = []
-  prev_frame = 0
-  for i, cut_secs in enumerate(cuts):
-    frame = int(cut_secs * v.fps + 0.9999)  # ceil with threshold
-    if frame - prev_frame <= 1:  # ignore 1-frame cuts
-      continue
-    offset_ticks = prev_frame * v.fps_denominator
-    duration_ticks = (frame - prev_frame) * v.fps_denominator
+  for i, frame in enumerate(stamp_frames[:-1]):
+    offset_ticks = frame * v.fps_denominator
+    duration_ticks = (stamp_frames[i + 1] - frame) * v.fps_denominator
     clips.append(FCPClip(
       seq=f'{i + 1:0{seq_digits}}',
       ref_id=f'r{i + first_available_ref_id}',
       offset=to_fcp_time(offset_ticks, v.fps_numerator),
       duration=to_fcp_time(duration_ticks, v.fps_numerator),
     ))
-    prev_frame = frame
   return clips
 
 

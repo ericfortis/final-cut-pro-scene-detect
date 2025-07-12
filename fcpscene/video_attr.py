@@ -8,14 +8,17 @@ from collections.abc import Sequence
 from .utils import format_seconds, clean_decimals
 from .ffmpeg import ffprobe
 
+
 # TODO FCP actually uses frameDuration="100/6000s", we 1/60, think about this
 
 @dataclass
 class FFProbe:
   width: int = 0
   height: int = 0
+
   duration: float = 0
   r_frame_rate: str = ''  # real base '60/1', '30000/1001'=29.97
+
   codec_name: str = ''
   codec_type: str = ''
 
@@ -54,17 +57,17 @@ class VideoAttr(FFProbe):
 
   @property
   def summary(self) -> str:
-    return '   '.join([
+    return '    '.join([
       f'{self.width}x{self.height}',
       f'{clean_decimals(f"{self.fps:.2f}")}fps',
+      format_seconds(self.duration),
       self.pretty_codec_name,
-      f'(Duration: {format_seconds(self.duration)})'
     ])
 
   @property
   def pretty_codec_name(self):
     # ffmpeg -codecs | grep '^...V'
-    fcp_codecs = {
+    return {
       'dnxhd': 'Avid DNxHD',
       'dvvideo': 'DV (Digital Video)',
       'h264': 'AVC (H.264)',
@@ -74,8 +77,7 @@ class VideoAttr(FFProbe):
       'prores': 'ProRes',
       'qtrle': 'QuickTime RLE',
       'rawvideo': 'Uncompressed Video',
-    }
-    return fcp_codecs.get(self.codec_name.lower(), self.codec_name)
+    }.get(self.codec_name, self.codec_name)
 
   @property
   def file_uri(self):

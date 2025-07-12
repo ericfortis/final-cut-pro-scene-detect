@@ -1,14 +1,14 @@
 import unittest
 from pathlib import Path
 
-from fcpscene import PROXY_WIDTH
+from fcpscene import PROXY_WIDTH, MIN_SCENE_SECS
 from fcpscene.event_bus import EventBus
 from fcpscene.video_attr import VideoAttr
 from fcpscene.to_csv_clips import to_csv_clips
 from fcpscene.to_fcpxml_clips import to_fcpxml_clips
 from fcpscene.to_fcpxml_markers import to_fcpxml_markers
 from fcpscene.to_fcpxml_compound_clips import to_fcpxml_compound_clips
-from fcpscene.detect_scene_cuts import detect_scene_cut_times
+from fcpscene.detect_cuts import detect_cuts
 
 VIDEO_DIR_PLACEHOLDER = '__VIDEO_DIR_PLACEHOLDER__'
 
@@ -28,20 +28,20 @@ class FCPScene(unittest.TestCase):
   def test_60fps_csv(self): self._csv('60fps.mp4', '60fps.csv')
 
   def _clips(self, video, expected):
-    cuts, v = self._detect(video)
-    self._assert(to_fcpxml_clips(cuts, v), expected)
+    stamps, v = self._detect(video)
+    self._assert(to_fcpxml_clips(stamps, v), expected)
 
   def _compound_clips(self, video, expected):
-    cuts, v = self._detect(video)
-    self._assert(to_fcpxml_compound_clips(cuts, v), expected)
+    stamps, v = self._detect(video)
+    self._assert(to_fcpxml_compound_clips(stamps, v), expected)
 
   def _markers(self, video, expected):
-    cuts, v = self._detect(video)
-    self._assert(to_fcpxml_markers(cuts, v), expected)
+    stamps, v = self._detect(video)
+    self._assert(to_fcpxml_markers(stamps, v), expected)
 
   def _csv(self, video, expected):
-    cuts, v = self._detect(video)
-    self._assert(to_csv_clips(cuts, v.duration), expected)
+    stamps, v = self._detect(video)
+    self._assert(to_csv_clips(stamps), expected)
 
 
   def _assert(self, actual, expected):
@@ -51,8 +51,8 @@ class FCPScene(unittest.TestCase):
 
   def _detect(self, video):
     v = VideoAttr(self.fixtures / video)
-    cuts = detect_scene_cut_times(v, EventBus(), sensitivity=85, proxy_width=PROXY_WIDTH)
-    return cuts, v
+    stamps = detect_cuts(v, EventBus(), sensitivity=85, proxy_width=PROXY_WIDTH, min_scene_secs=MIN_SCENE_SECS)
+    return stamps, v
 
 
 if __name__ == '__main__':

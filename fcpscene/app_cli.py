@@ -5,7 +5,7 @@ import argparse
 from shutil import which
 from pathlib import Path
 
-from fcpscene import __version__, __repo_url__, __description__, PROXY_WIDTH, DEFAULT_SENSITIVITY
+from fcpscene import __version__, __repo_url__, __description__, PROXY_WIDTH, DEFAULT_SENSITIVITY, MIN_SCENE_SECS
 from .ffmpeg import ffmpeg, ffprobe
 from .video_attr import VideoAttr
 from .event_bus import EventBus
@@ -13,7 +13,7 @@ from .to_csv_clips import to_csv_clips
 from .to_fcpxml_clips import to_fcpxml_clips
 from .to_fcpxml_markers import to_fcpxml_markers
 from .to_fcpxml_compound_clips import to_fcpxml_compound_clips
-from .detect_scene_cuts import detect_scene_cut_times
+from .detect_cuts import detect_cuts
 
 def main():
   check_dependency(ffmpeg)
@@ -22,8 +22,8 @@ def main():
   parser = argparse.ArgumentParser(
     description=__description__,
     epilog=f'{__repo_url__}\nPowered by FFmpeg',
-    formatter_class=argparse.RawTextHelpFormatter)
-
+    formatter_class=argparse.RawTextHelpFormatter
+  )
   parser.add_argument(
     'video',
     type=argparse.FileType('r'),
@@ -45,6 +45,12 @@ def main():
     type=validate_percent,
     default=DEFAULT_SENSITIVITY,
     help='(0-100, default: %(default)s) frame difference percent for detecting scene changes'
+  )
+  parser.add_argument(
+    '-mss', '--min-scene-secs',
+    type=float,
+    default=MIN_SCENE_SECS,
+    help='(default: %(default)s) ignore scene changes shorter than this duration (in seconds) to avoid noise'
   )
   parser.add_argument(
     '-w', '--proxy-width',
@@ -76,7 +82,7 @@ def main():
     return
 
   if args.video is None:
-    parser.error('the following argument is required: video')
+    parser.error('The "video" is required')
 
   if args.output and not args.output.endswith(('.csv', '.fcpxml')):
     parser.error('Invalid output format. Only .fcpxml and .csv are supported')
@@ -89,24 +95,21 @@ def main():
   bus = EventBus()
   bus.subscribe_progress(print_progress)
   try:
-    cuts = detect_scene_cut_times(v, bus, args.sensitivity, args.proxy_width)
-    if cuts:
-      process_cuts(cuts, v, args.mode, args.output)
-    else:
-      exit_error('No scene changes found')
+    stamps = detect_cuts(v, bus, args.sensitivity, args.proxy_width, args.min_scene_secs)
+    process_stamps(stamps, v, args.mode, args.output)
   except Exception as e:
     exit_error(f'Unexpected error while running ffmpeg: {e}')
 
 
-def process_cuts(cuts, v, mode, out_file):
+def process_stamps(stamps, v, mode, out_file):
   if out_file and out_file.endswith('.csv'):
-    txt = to_csv_clips(cuts, v.duration)
+    txt = to_csv_clips(stamps)
   elif mode == 'clips':
-    txt = to_fcpxml_clips(cuts, v)
+    txt = to_fcpxml_clips(stamps, v)
   elif mode == 'markers':
-    txt = to_fcpxml_markers(cuts, v)
+    txt = to_fcpxml_markers(stamps, v)
   else:
-    txt = to_fcpxml_compound_clips(cuts, v)
+    txt = to_fcpxml_compound_clips(stamps, v)
 
   try:
     out_file = Path(out_file or v.path.with_suffix('.fcpxml'))
@@ -123,9 +126,10 @@ def validate_percent(value):
   return f
 
 
-def print_progress(progress, cuts):
+def print_progress(progress, stamps):
   bar = progress_bar(progress)
-  print(f'\r{bar} {int(progress * 100)}% (Cuts {len(cuts)})  ', end='', flush=True)
+  n_cuts = len(stamps) - 1 if progress != 1 else len(stamps) - 2
+  print(f'\r{bar} {int(progress * 100)}% (Cuts {n_cuts})  ', end='', flush=True)
 
 
 def progress_bar(progress):
