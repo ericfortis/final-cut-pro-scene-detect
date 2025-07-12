@@ -105,9 +105,10 @@ A 15-minute 4K 60fps video takes about a minute to run on a 14-core M4. You’ll
 see the detected cut times as it runs — if you hit "Stop", you can still export
 a Final Cut Pro project file with the cuts found so far.
 
-The sensitivity should be around 65 to 90%. Start with 85% and increase it if
-it’s missing cuts. By the way, 1-frame cuts are ignored regardless of the
-percent. Note, sensitivity doesn't affect processing speed.
+The **Sensitivity** should be around 65 to 90%. Start with 85% and increase it
+if it’s missing cuts. Pair it with **Min Scene Seconds** so you can have a high
+sensitivity while ignoring false positives. Those options have no effect on the
+processing speed.
 
 After the project is loaded in Final Cut you can delete the exported `.fcpxml` file.
 

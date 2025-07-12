@@ -21,21 +21,21 @@ from .detect_cuts import detect_cuts, TimelineStamps
 
 root_win = dict(width=680, height=300)
 
-sensitivity_slider_width = 150
+sensitivity_slider_width = 185
 sensitivity_label = dict(x=30, y=20)
-sensitivity_slider = dict(x=103, y=18)
-sensitivity_value = dict(x=260, y=20)
+sensitivity_slider = dict(x=105, y=18)
+sensitivity_value = dict(x=295, y=19)
 
 min_scene_secs_label = dict(x=366, y=20)
 min_scene_secs_entry = dict(x=493, y=17)
 
 video_label = dict(x=30, y=70)
 video_entry = dict(x=102, y=65, width=450)
-video_browse_btn = dict(x=556, y=65)
+video_browse_btn = dict(x=556, y=64)
 video_hint = dict(x=103, y=92)
 
-radio_compound_clips = dict(x=197, y=140)
-radio_clips = dict(x=329, y=140)
+radio_clips = dict(x=200, y=140)
+radio_compound_clips = dict(x=260, y=140)
 radio_markers = dict(x=392, y=140)
 
 run_stop_btn = dict(x=30, y=170, width=76)
@@ -211,7 +211,7 @@ class GUI:
 
 
   def render_mode_radio(self):
-    self.mode = tk.StringVar(value='compound')
+    self.mode = tk.StringVar(value='clips')
 
     def on_mode_change(*args):
       self.handle_hint_warning(visible=self.mode.get() == 'compound')
@@ -220,17 +220,18 @@ class GUI:
 
     ttk.Radiobutton(
       self.root,
+      text='Clips',
+      variable=self.mode,
+      value='clips'
+    ).place(**radio_clips)
+
+    ttk.Radiobutton(
+      self.root,
       text='Compound Clips',
       variable=self.mode,
       value='compound'
     ).place(**radio_compound_clips)
 
-    ttk.Radiobutton(
-      self.root,
-      text='Clips',
-      variable=self.mode,
-      value='clips'
-    ).place(**radio_clips)
 
     ttk.Radiobutton(
       self.root,
@@ -289,8 +290,8 @@ class GUI:
 
   def process_fcpxml(self):
     if self.mode.get() == 'markers': return to_fcpxml_markers(self.stamps, self.v)
-    if self.mode.get() == 'clips': return to_fcpxml_clips(self.stamps, self.v)
-    return to_fcpxml_compound_clips(self.stamps, self.v)
+    if self.mode.get() == 'compound': return to_fcpxml_compound_clips(self.stamps, self.v)
+    return to_fcpxml_clips(self.stamps, self.v)
 
 
   def render_export_as_csv_btn(self):
@@ -313,7 +314,6 @@ class GUI:
       text='Your Library must have an event called "fcpscene"')
     self.hint_warning.update_idletasks()
     hint_warning['x'] -= self.hint_warning.winfo_reqwidth()
-    self.hint_warning.place(**hint_warning)
 
   def handle_hint_warning(self, visible):
     if visible:
@@ -337,14 +337,14 @@ class GUI:
     )
     self.progress_canvas.place(**progress_canvas)
 
-  def set_progress_label(self, progress, n_cuts):
+  def set_progress_label(self, progress, n_scenes):
     self.progress.set(progress * 100)
-    self.progress_label.set(f'{int(progress * 100)}% (Cuts {n_cuts})')
+    self.progress_label.set(f'{int(progress * 100)}% ({n_scenes} Scenes)')
 
   def on_progress(self, progress: float, stamps: TimelineStamps):
     self.stamps = stamps
-    n_cuts = len(stamps) - 1 if progress != 1 else len(stamps) - 2
-    self.set_progress_label(progress, max(n_cuts, 0))
+    n_scenes = len(stamps) - 1 if progress != 1 else len(stamps) - 2
+    self.set_progress_label(progress, max(n_scenes, 0))
     self.update_progress_canvas(progress)
     self.root.update_idletasks()
 

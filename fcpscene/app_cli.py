@@ -43,7 +43,7 @@ def main():
   parser.add_argument(
     '-q', '--quiet',
     action='store_true',
-    help='Do not print progress or video summary'
+    help='Do not print video summary and progress'
   )
   parser.add_argument(
     '-s', '--sensitivity',
@@ -63,13 +63,13 @@ def main():
   )
   parser.add_argument(
     '-m', '--mode',
-    default='compound-clips',
-    choices=['compound-clips', 'clips', 'markers', 'count', 'list'],
+    default='clips',
+    choices=['clips', 'compound-clips', 'markers', 'count', 'list'],
     help=(
       '(default: %(default)s)\n'
       'Options:\n'
-      '    compound-clips: Wraps each clip in its own compound clip\n'
       '    clips: Normal clips\n'
+      '    compound-clips: Wraps each clip in its own compound clip\n'
       '    markers: Only add markers\n'
       '    count: Print cut count (no file is saved)\n'
       '    list: Print cut times (no file is saved)\n'
@@ -110,6 +110,9 @@ def main():
 
 
 def process_stamps(stamps, v, mode, out_file):
+  if out_file and out_file.endswith('.csv'):
+    mode = 'csv'
+
   if mode == 'count':
     print(len(stamps) - 2)
     return
@@ -118,19 +121,19 @@ def process_stamps(stamps, v, mode, out_file):
     print(*stamps[1:-1])
     return
 
-  if out_file and out_file.endswith('.csv'):
+  if mode == 'csv':
     txt = to_csv_clips(stamps)
-  elif mode == 'clips':
-    txt = to_fcpxml_clips(stamps, v)
   elif mode == 'markers':
     txt = to_fcpxml_markers(stamps, v)
-  else:
+  elif mode == 'compound-clips':
     txt = to_fcpxml_compound_clips(stamps, v)
+  else:
+    txt = to_fcpxml_clips(stamps, v)
 
   try:
     out_file = Path(out_file or v.path.with_suffix('.fcpxml'))
     out_file.write_text(txt, encoding='utf-8')
-    print(f'\n💾 file://{out_file.resolve()}')
+    print(f'\nfile://{out_file.resolve()}')
   except Exception as e:
     exit_error(f'Failed to write to {out_file}: {e}')
 
@@ -144,8 +147,8 @@ def validate_percent(value):
 
 def print_progress(progress, stamps):
   bar = progress_bar(progress)
-  n_cuts = len(stamps) - 1 if progress != 1 else len(stamps) - 2
-  print(f'\r{bar} {int(progress * 100)}% (Cuts {n_cuts})  ', end='', flush=True)
+  n_scenes = len(stamps) - 1 if progress != 1 else len(stamps) - 2
+  print(f'\r{bar} {int(progress * 100)}% ({n_scenes} Scenes)  ', end='', flush=True)
 
 
 def progress_bar(progress):
