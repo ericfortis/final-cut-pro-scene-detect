@@ -52,14 +52,19 @@ brew tap ericfortis/fcpscene
 brew install fcpscene
 ```
 
-Then open Finder and Go &rarr; Go to Folder and type:
+Launch it by typing:
+```shell
+fcpscene --gui
+```
 
-**/opt/homebrew/opt/fcpscene/**
-
-There you’ll see the **fcpscene.app**, which
-you can move to your Applications folder.
+Optionally, install the **fcpscene.app** droplet.
 
 <img src="fcpscene.app/icon.svg" width="60"/>
+
+In Finder (not in the Terminal), Go &rarr; **Go to Folder** and type **/opt/homebrew/opt/fcpscene/**
+
+Then move **fcpscene.app** to your Applications folder.
+
 
 
 ## Before Running
@@ -96,11 +101,6 @@ the .fcpxml file is.
 The **fcpscene.app** is a droplet, which means you can drag a video file onto it,
 or right-click the video file and select **Open With** &rarr; **fcpscene.app**
 
-Alternatively, you can launch it from the Terminal by typing:
-```shell
-fcpscene --gui
-```
-
 A 15-minute 4K 60fps video takes about a minute to run on a 14-core M4. You’ll
 see the detected cut times as it runs — if you hit "Stop", you can still export
 a Final Cut Pro project file with the cuts found so far.
@@ -110,7 +110,7 @@ if it’s missing cuts. Pair it with **Min Scene Seconds** so you can have a hig
 sensitivity while ignoring false positives. Those options have no effect on the
 processing speed.
 
-After the project is loaded in Final Cut you can delete the exported `.fcpxml` file.
+You can delete the exported `.fcpxml` after the project is loaded in Final Cut.
 
 <br>
 
@@ -122,7 +122,7 @@ it’s convenient for batch processing videos.
 <details>
 <summary>Details</summary>
 
-## Example
+## Usage Example
 
 ```shell
 fcpscene ~/Movies/my-video.mp4
@@ -133,18 +133,15 @@ That example generates an `~/Movies/my-video.fcpxml` project.
 Tip: If you don’t want to type the video file path, just drag the
 file into the Terminal — it will paste the path for you.
 
+<br/>
 
 ### Options
 
-For the full list of options, type:
-
-```shell
-fcpscene --help
-```
+For the full list of options, type: `fcpscene --help`
 
 <br/>
 
-#### Output filename
+#### Output Filename
 Default: `<video-dir>/<video-name>.fcpxml` (i.e., in the same directory the video is in)
 
 ```shell
@@ -154,12 +151,24 @@ fcpscene my-video.mp4 --output my-project.fcpxml
 <br/>
 
 #### Sensitivity
-Range: 0-100, Default: **85**
+Range: 0-100, Default: **88**
 
 This value sets the frame difference percentage used to detect scene changes.
 
 ```shell
 fcpscene --sensitivity 70 my-video.mp4
+```
+
+<br/>
+
+#### Min Scene Seconds
+Default: **0.6**
+
+Ignores scene changes that are shorter than the value. This is handy for having
+a high-sensitivity while avoiding false-positives.
+
+```shell
+fcpscene --min-scene-seconds 2 my-video.mp4
 ```
 
 <br/>
@@ -172,6 +181,29 @@ the video during processing (without modifying the original file).
 
 ```shell
 fcpscene --proxy-width 240 my-video.mp4
+```
+
+<br/>
+
+#### Mode
+Choices:
+- **clips**: Normal clips (default)
+- **compound-clips**: Wraps each clip in its own compound clip
+- **markers**: Only add markers
+- **count**: Print scene changes count (no file is saved)
+- **list**: Print scene changes times (no file is saved)
+
+```shell
+fcpscene --mode markers my-video.mp4
+```
+
+<br/>
+
+#### Quiet
+Do not print video summary and progress.
+
+```shell
+fcpscene --quiet my-video.mp4
 ```
 
 <br/>

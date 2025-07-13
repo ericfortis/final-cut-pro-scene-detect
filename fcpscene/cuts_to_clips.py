@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from .video_attr import VideoAttr
-from .detect_scene_changes import CutTimes
+from .detect_scene_changes import CutTimes, count_scenes
 
 
 @dataclass
@@ -33,7 +33,7 @@ def cuts_to_clips(cuts: CutTimes, v: VideoAttr) -> list[Clip]:
     FCP uses incremental reference IDs. `r1` and `r2` are reserved in our templates.
   """
   first_available_ref_id = 3  # constant
-  seq_digits = len(str(len(cuts)))
+  seq_digits = len(str(count_scenes(1, cuts)))
 
   cut_frames = [int(s * v.fps + 0.9999) for s in cuts]  # ceil with threshold
 
