@@ -68,15 +68,15 @@ class VideoAttr(FFProbe):
   def pretty_codec_name(self):
     # ffmpeg -codecs | grep '^...V'
     return {
-      'dnxhd': 'Avid DNxHD',
+      'dnxhd': 'DNxHD',
       'dvvideo': 'DV (Digital Video)',
-      'h264': 'AVC (H.264)',
-      'hevc': 'HVEC (H.265)',
+      'h264': 'H.264',
+      'hevc': 'H.265',
       'jpeg2000': 'JPEG 2000',
       'mpeg4': 'MPEG-4 Part 2',
       'prores': 'ProRes',
       'qtrle': 'QuickTime RLE',
-      'rawvideo': 'Uncompressed Video',
+      'rawvideo': 'Uncompressed',
     }.get(self.codec_name, self.codec_name)
 
   @property

@@ -12,8 +12,8 @@ CutTimes = list[float]
 
 def count_scenes(progress: float, cuts: CutTimes) -> int:
   if progress < 1:
-    return len(cuts) - 1 # Exclude start
-  return len(cuts) - 2 # Exclude start and end
+    return len(cuts)
+  return len(cuts) - 1 # Exclude end
 
 
 def detect_scene_changes(v, bus, sensitivity, proxy_width, min_scene_secs, start_time=0) -> CutTimes:

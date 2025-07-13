@@ -5,7 +5,7 @@ from .detect_scene_changes import CutTimes
 
 
 @dataclass
-class FCPClip:
+class Clip:
   """Describes a Final Cut Pro clip
 
   Attributes:
@@ -20,7 +20,7 @@ class FCPClip:
   duration: str
 
 
-def cuts_to_clips(cuts: CutTimes, v: VideoAttr) -> list[FCPClip]:
+def cuts_to_clips(cuts: CutTimes, v: VideoAttr) -> list[Clip]:
   """
   Background:
     The clip’s [left and right] edges — `offset` and `offset+duration` — are in
@@ -41,7 +41,7 @@ def cuts_to_clips(cuts: CutTimes, v: VideoAttr) -> list[FCPClip]:
   for i, frame in enumerate(cut_frames[:-1]):
     offset_ticks = frame * v.fps_denominator
     duration_ticks = (cut_frames[i + 1] - frame) * v.fps_denominator
-    clips.append(FCPClip(
+    clips.append(Clip(
       seq=f'{i + 1:0{seq_digits}}',
       ref_id=f'r{i + first_available_ref_id}',
       offset=to_fcp_time(offset_ticks, v.fps_numerator),

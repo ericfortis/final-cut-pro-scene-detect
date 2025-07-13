@@ -103,6 +103,7 @@ def main():
   if not args.quiet:
     print(v.summary)
     bus.subscribe_progress(print_progress)
+
   try:
     cuts = detect_scene_changes(v, bus, args.sensitivity, args.proxy_width, args.min_scene_seconds)
     process_cuts(cuts, v, args.mode, args.output)
@@ -111,9 +112,6 @@ def main():
 
 
 def process_cuts(cuts, v, mode, out_file):
-  if out_file and out_file.endswith('.csv'):
-    mode = 'csv'
-
   if mode == 'count':
     print(len(cuts) - 2)
     return
@@ -122,7 +120,7 @@ def process_cuts(cuts, v, mode, out_file):
     print(*cuts[1:-1])
     return
 
-  if mode == 'csv':
+  if out_file and out_file.endswith('.csv'):
     txt = to_csv_clips(cuts)
   elif mode == 'markers':
     txt = to_fcpxml_markers(cuts, v)
