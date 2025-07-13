@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import json
 import tempfile
 import threading
 import subprocess
@@ -10,6 +11,7 @@ from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 
 from fcpscene import __version__, __repo_url__, __title__, PROXY_WIDTH, DEFAULT_SENSITIVITY, MIN_SCENE_SECS
+from .utils import throttle
 from .ffmpeg import ffmpeg, ffprobe
 from .event_bus import EventBus
 from .video_attr import VideoAttr
@@ -18,6 +20,63 @@ from .to_fcpxml_clips import to_fcpxml_clips
 from .to_fcpxml_markers import to_fcpxml_markers
 from .to_fcpxml_compound_clips import to_fcpxml_compound_clips
 from .detect_scene_changes import detect_scene_changes, CutTimes, count_scenes
+
+
+class LastUsed:
+  def __init__(self):
+    self.init_defaults()
+
+    self.settings = Path.home() / '.config' / 'fcpscene' / 'last-used.json'
+    settings = self.read_settings()
+    if settings:
+      self.dir = settings.get('dir', self.dir)
+      self.sensitivity = settings.get('sensitivity', self.sensitivity)
+      self.min_scene_seconds = settings.get('min_scene_seconds', self.min_scene_seconds)
+      self.mode = settings.get('mode', self.mode)
+
+  def init_defaults(self):
+    self.dir = str(Path.home() / 'Movies')
+    self.sensitivity = DEFAULT_SENSITIVITY
+    self.min_scene_seconds = str(MIN_SCENE_SECS)
+    self.mode = 'clips'
+
+  def read_settings(self):
+    try:
+      with open(self.settings, 'r') as f:
+        return json.load(f)
+    except Exception:
+      return None
+
+  def save_dir(self, value):
+    self.dir = value
+    self.save()
+
+  def save_sensitivity(self, value):
+    self.sensitivity = value
+    self.save()
+
+  def save_min_scene_seconds(self, value):
+    self.min_scene_seconds = value
+    self.save()
+
+  def save_mode(self, value):
+    self.mode = value
+    self.save()
+
+  @throttle(0.5)
+  def save(self):
+    try:
+      self.settings.parent.mkdir(parents=True, exist_ok=True)
+      with open(self.settings, 'w') as f:
+        json.dump({
+          'dir': self.dir,
+          'sensitivity': self.sensitivity,
+          'min_scene_seconds': self.min_scene_seconds,
+          'mode': self.mode
+        }, f, indent=2)
+    except Exception:
+      pass
+
 
 root_win = dict(width=680, height=300)
 
@@ -72,7 +131,11 @@ class GUI:
   def __init__(self, root, video):
     self.check_dependencies()
 
-    self.min_scene_secs = tk.StringVar(value=str(MIN_SCENE_SECS))
+    self.last_used = LastUsed()
+    self.initial_dir = self.last_used.dir
+    self.sensitivity_val = tk.IntVar(value=self.last_used.sensitivity)
+    self.min_scene_secs = tk.StringVar(value=self.last_used.min_scene_seconds)
+    self.mode = tk.StringVar(value=self.last_used.mode)
 
     self.root = root
     self.center_window()
@@ -84,7 +147,6 @@ class GUI:
     self.bus = EventBus()
     self.cuts = []
     self.running = False
-    self.initial_dir = str(Path.home() / 'Movies')
 
     self.setup_menus()
 
@@ -134,11 +196,11 @@ class GUI:
 
   def render_sensitivity_slider(self):
     ttk.Label(self.root, text='Sensitivity').place(**sensitivity_label)
-    self.sensitivity_val = tk.IntVar(value=DEFAULT_SENSITIVITY)
 
     def on_slider_move(val):
       int_val = int(float(val))
       self.sensitivity_val.set(int_val)
+      self.root.after(0, lambda: self.last_used.save_sensitivity(int_val))
 
     self.sensitivity_slider = ttk.Scale(
       self.root,
@@ -146,7 +208,7 @@ class GUI:
       to=100,
       orient='horizontal',
       command=on_slider_move,
-      value=DEFAULT_SENSITIVITY,
+      value=self.sensitivity_val.get(),
       length=sensitivity_slider_width
     )
     self.sensitivity_slider.place(**sensitivity_slider)
@@ -159,9 +221,10 @@ class GUI:
         value = float(self.min_scene_secs.get())
         if value < 0:
           self.min_scene_secs.set(str(0))
+        self.root.after(0, lambda: self.last_used.save_min_scene_seconds(self.min_scene_secs.get()))
       except ValueError as e:
+        self.min_scene_secs.set(self.last_used.min_scene_seconds)
         messagebox.showerror('Invalid Input', f'Invalid minimum scene seconds: {e}')
-        self.min_scene_secs.set(str(MIN_SCENE_SECS))
 
     ttk.Label(self.root, text='Min Scene Seconds').place(**min_scene_secs_label)
     self.min_scene_secs_entry = ttk.Entry(
@@ -190,6 +253,8 @@ class GUI:
         self.root.focus_force()
         self.run_scene_detect()
 
+      self.root.after(0, lambda: self.last_used.save_dir(self.initial_dir))
+
     def browse_file():
       file_path = filedialog.askopenfilename(
         title='Select Video File',
@@ -211,10 +276,9 @@ class GUI:
 
 
   def render_mode_radio(self):
-    self.mode = tk.StringVar(value='clips')
-
     def on_mode_change(*args):
       self.handle_hint_warning(visible=self.mode.get() == 'compound')
+      self.root.after(0, lambda: self.last_used.save_mode(self.mode.get()))
 
     self.mode.trace_add('write', on_mode_change)
 
@@ -231,7 +295,6 @@ class GUI:
       variable=self.mode,
       value='compound'
     ).place(**radio_compound_clips)
-
 
     ttk.Radiobutton(
       self.root,
@@ -314,6 +377,7 @@ class GUI:
       text='Your Library must have an event called "fcpscene"')
     self.hint_warning.update_idletasks()
     hint_warning['x'] -= self.hint_warning.winfo_reqwidth()
+    self.handle_hint_warning(self.mode.get() == 'compound')
 
   def handle_hint_warning(self, visible):
     if visible:

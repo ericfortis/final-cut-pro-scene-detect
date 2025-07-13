@@ -1,3 +1,8 @@
+import time
+import threading
+from functools import wraps
+
+
 def format_seconds(seconds: float, max_decimals: int = 2) -> str:
   """Seconds to string 9h9m9s
 
@@ -31,3 +36,40 @@ def clean_decimals(number) -> str:
       '5'
   """
   return str(number).rstrip('0').rstrip('.') or '0'
+
+
+def throttle(seconds: float):
+  def decorator(fn):
+    attr_name = f'_throttle_state_{fn.__name__}'
+
+    @wraps(fn)
+    def wrapper(self):
+      now = time.monotonic()
+
+      if not hasattr(self, attr_name):
+        setattr(self, attr_name, {
+          'last_call': 0.0,
+          'pending': False,
+          'timer': None
+        })
+      state = getattr(self, attr_name)
+      elapsed = now - state['last_call']
+
+      def call_later():
+        state['last_call'] = time.monotonic()
+        fn(self)
+        state['pending'] = False
+        state['timer'] = None
+
+      if elapsed >= seconds:
+        state['last_call'] = now
+        fn(self)
+      elif not state['pending']:
+        state['pending'] = True
+        delay = seconds - elapsed
+        state['timer'] = threading.Timer(delay, call_later)
+        state['timer'].start()
+
+    return wrapper
+
+  return decorator
