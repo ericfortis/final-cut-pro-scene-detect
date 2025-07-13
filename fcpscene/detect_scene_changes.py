@@ -6,11 +6,17 @@ from .ffmpeg import ffmpeg
 from .event_bus import EventBus
 
 
-TimelineStamps = list[float]
+CutTimes = list[float]
 """[Start + [SceneChanges] + End] in seconds"""
 
 
-def detect_cuts(v, bus, sensitivity, proxy_width, min_scene_secs, start_time=0) -> TimelineStamps:
+def count_scenes(progress: float, cuts: CutTimes) -> int:
+  if progress < 1:
+    return len(cuts) - 1 # Exclude start
+  return len(cuts) - 2 # Exclude start and end
+
+
+def detect_scene_changes(v, bus, sensitivity, proxy_width, min_scene_secs, start_time=0) -> CutTimes:
   """Finds the timestamps of scene changes using FFmpeg
 
   Video filter chain:
@@ -43,7 +49,7 @@ def detect_cuts(v, bus, sensitivity, proxy_width, min_scene_secs, start_time=0) 
     '-f', 'null', '-',  # Don’t generate an output video
   ]
 
-  stamps = [start_time]
+  cuts = [start_time]
   stderr_buffer = []
   stopped_from_ui = False
 
@@ -63,20 +69,20 @@ def detect_cuts(v, bus, sensitivity, proxy_width, min_scene_secs, start_time=0) 
         if match:
           try:
             cut_time = float(match.group(1))
-            if (cut_time - stamps[-1]) >= min_scene_secs:
-              stamps.append(cut_time)
-              bus.emit_progress(cut_time / v.duration, stamps)
+            if (cut_time - cuts[-1]) >= min_scene_secs:
+              cuts.append(cut_time)
+              bus.emit_progress(cut_time / v.duration, cuts)
           except ValueError:
             pass
 
       process.wait()
-      stamps.append(v.duration)
-      bus.emit_progress(1, stamps)
+      cuts.append(v.duration)
+      bus.emit_progress(1, cuts)
 
       if not stopped_from_ui and process.returncode != 0:
         raise RuntimeError(''.join(stderr_buffer))
 
-      return stamps
+      return cuts
   except KeyboardInterrupt:  # Ctrl+C terminates analysis, and we create a file with the progress so far
     if process:
       process.terminate()

@@ -13,7 +13,8 @@ from .to_csv_clips import to_csv_clips
 from .to_fcpxml_clips import to_fcpxml_clips
 from .to_fcpxml_markers import to_fcpxml_markers
 from .to_fcpxml_compound_clips import to_fcpxml_compound_clips
-from .detect_cuts import detect_cuts
+from .detect_scene_changes import detect_scene_changes, count_scenes
+
 
 def main():
   check_dependency(ffmpeg)
@@ -103,32 +104,32 @@ def main():
     print(v.summary)
     bus.subscribe_progress(print_progress)
   try:
-    stamps = detect_cuts(v, bus, args.sensitivity, args.proxy_width, args.min_scene_seconds)
-    process_stamps(stamps, v, args.mode, args.output)
+    cuts = detect_scene_changes(v, bus, args.sensitivity, args.proxy_width, args.min_scene_seconds)
+    process_cuts(cuts, v, args.mode, args.output)
   except Exception as e:
     exit_error(f'Unexpected error while running ffmpeg: {e}')
 
 
-def process_stamps(stamps, v, mode, out_file):
+def process_cuts(cuts, v, mode, out_file):
   if out_file and out_file.endswith('.csv'):
     mode = 'csv'
 
   if mode == 'count':
-    print(len(stamps) - 2)
+    print(len(cuts) - 2)
     return
 
   if mode == 'list':
-    print(*stamps[1:-1])
+    print(*cuts[1:-1])
     return
 
   if mode == 'csv':
-    txt = to_csv_clips(stamps)
+    txt = to_csv_clips(cuts)
   elif mode == 'markers':
-    txt = to_fcpxml_markers(stamps, v)
+    txt = to_fcpxml_markers(cuts, v)
   elif mode == 'compound-clips':
-    txt = to_fcpxml_compound_clips(stamps, v)
+    txt = to_fcpxml_compound_clips(cuts, v)
   else:
-    txt = to_fcpxml_clips(stamps, v)
+    txt = to_fcpxml_clips(cuts, v)
 
   try:
     out_file = Path(out_file or v.path.with_suffix('.fcpxml'))
@@ -145,10 +146,9 @@ def validate_percent(value):
   return f
 
 
-def print_progress(progress, stamps):
+def print_progress(progress, cuts):
   bar = progress_bar(progress)
-  n_scenes = len(stamps) - 1 if progress != 1 else len(stamps) - 2
-  print(f'\r{bar} {int(progress * 100)}% ({n_scenes} Scenes)  ', end='', flush=True)
+  print(f'\r{bar} {int(progress * 100)}% ({count_scenes(progress, cuts)} Scenes)  ', end='', flush=True)
 
 
 def progress_bar(progress):

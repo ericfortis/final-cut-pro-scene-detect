@@ -1,12 +1,12 @@
 from .video_attr import VideoAttr
-from .stamps_to_clips import stamps_to_clips
-from .detect_cuts import TimelineStamps
+from .cuts_to_clips import cuts_to_clips
+from .detect_scene_changes import CutTimes
 
 
-def to_fcpxml_clips(stamps: TimelineStamps, v: VideoAttr) -> str:
+def to_fcpxml_clips(cuts: CutTimes, v: VideoAttr) -> str:
   """Blades a timeline given cut times in seconds."""
 
-  clips = stamps_to_clips(stamps, v)
+  clips = cuts_to_clips(cuts, v)
 
   xml = f'''<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE fcpxml>

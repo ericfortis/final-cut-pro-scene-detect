@@ -17,7 +17,7 @@ from .to_csv_clips import to_csv_clips
 from .to_fcpxml_clips import to_fcpxml_clips
 from .to_fcpxml_markers import to_fcpxml_markers
 from .to_fcpxml_compound_clips import to_fcpxml_compound_clips
-from .detect_cuts import detect_cuts, TimelineStamps
+from .detect_scene_changes import detect_scene_changes, CutTimes, count_scenes
 
 root_win = dict(width=680, height=300)
 
@@ -82,7 +82,7 @@ class GUI:
 
     self.v = VideoAttr('')
     self.bus = EventBus()
-    self.stamps = []
+    self.cuts = []
     self.running = False
     self.initial_dir = str(Path.home() / 'Movies')
 
@@ -260,7 +260,7 @@ class GUI:
 
   def render_send_to_fcp_btn(self):
     def on_click():
-      if not self.stamps:
+      if not self.cuts:
         messagebox.showinfo('No cuts found', 'No scene changes were detected')
       else:
         xml = self.process_fcpxml()
@@ -275,7 +275,7 @@ class GUI:
 
   def render_export_as_fcp_btn(self):
     def on_click():
-      if not self.stamps:
+      if not self.cuts:
         messagebox.showinfo('No cuts found', 'No scene changes were detected')
       else:
         xml = self.process_fcpxml()
@@ -289,17 +289,17 @@ class GUI:
 
 
   def process_fcpxml(self):
-    if self.mode.get() == 'markers': return to_fcpxml_markers(self.stamps, self.v)
-    if self.mode.get() == 'compound': return to_fcpxml_compound_clips(self.stamps, self.v)
-    return to_fcpxml_clips(self.stamps, self.v)
+    if self.mode.get() == 'markers': return to_fcpxml_markers(self.cuts, self.v)
+    if self.mode.get() == 'compound': return to_fcpxml_compound_clips(self.cuts, self.v)
+    return to_fcpxml_clips(self.cuts, self.v)
 
 
   def render_export_as_csv_btn(self):
     def on_click():
-      if not self.stamps:
+      if not self.cuts:
         messagebox.showinfo('No cuts found', 'No scene changes were detected')
       else:
-        csv = to_csv_clips(self.stamps)
+        csv = to_csv_clips(self.cuts)
         self.root.after(0, lambda: save_csv(csv, self.v.path.with_suffix('.csv').name))
 
     self.export_as_csv_btn = ttk.Button(
@@ -341,10 +341,9 @@ class GUI:
     self.progress.set(progress * 100)
     self.progress_label.set(f'{int(progress * 100)}% ({n_scenes} Scenes)')
 
-  def on_progress(self, progress: float, stamps: TimelineStamps):
-    self.stamps = stamps
-    n_scenes = len(stamps) - 1 if progress != 1 else len(stamps) - 2
-    self.set_progress_label(progress, max(n_scenes, 0))
+  def on_progress(self, progress: float, cuts: CutTimes):
+    self.cuts = cuts
+    self.set_progress_label(progress, max(count_scenes(progress, cuts), 0))
     self.update_progress_canvas(progress)
     self.root.update_idletasks()
 
@@ -357,7 +356,7 @@ class GUI:
       fill=progress_color,
       outline=''
     )
-    cuts = self.stamps[1:] if progress != 1 else self.stamps[1:-1]
+    cuts = self.cuts[1:] if progress != 1 else self.cuts[1:-1]
     for cut in cuts:
       x = cut / self.v.duration * progress_width
       self.progress_canvas.create_line(
@@ -387,8 +386,8 @@ class GUI:
         self.on_progress(0, [])
         self.sensitivity_slider.config(state='disabled')
         self.run_stop_button.config(text='Stop')
-        self.stamps = []
-        self.stamps = detect_cuts(v, self.bus, sensitivity, PROXY_WIDTH, float(self.min_scene_secs.get()))
+        self.cuts = []
+        self.cuts = detect_scene_changes(v, self.bus, sensitivity, PROXY_WIDTH, float(self.min_scene_secs.get()))
         self.bus.unsubscribe_progress()
       except Exception as e:
         messagebox.showerror('Error', f'{e}')

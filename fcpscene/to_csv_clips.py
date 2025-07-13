@@ -1,8 +1,8 @@
 from .utils import clean_decimals
-from .detect_cuts import TimelineStamps
+from .detect_scene_changes import CutTimes
 
 
-def to_csv_clips(stamps: TimelineStamps) -> str:
+def to_csv_clips(cuts: CutTimes) -> str:
   """CSV with one clip per row
 
   Example:
@@ -13,6 +13,6 @@ def to_csv_clips(stamps: TimelineStamps) -> str:
     10,15
   """
   out = ['start,end']
-  for start, end in zip(stamps, stamps[1:]):
+  for start, end in zip(cuts, cuts[1:]):
     out.append(f'{clean_decimals(start)},{clean_decimals(end)}')
   return '\n'.join(out) + '\n'
