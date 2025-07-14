@@ -251,7 +251,6 @@ class GUI:
       else:
         self.video_hint.configure(text=self.v.summary)
         self.root.focus_force()
-        self.run_scene_detect()
 
       self.root.after(0, lambda: self.last_used.save_dir(self.initial_dir))
 
