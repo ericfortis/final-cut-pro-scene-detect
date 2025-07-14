@@ -93,12 +93,12 @@ video_entry = dict(x=102, y=65, width=450)
 video_browse_btn = dict(x=556, y=64)
 video_hint = dict(x=103, y=92)
 
-radio_clips = dict(x=200, y=140)
-radio_compound_clips = dict(x=260, y=140)
-radio_markers = dict(x=392, y=140)
+radio_clips = dict(x=205, y=143)
+radio_compound_clips = dict(x=265, y=143)
+radio_markers = dict(x=397, y=143)
 
-run_stop_btn = dict(x=30, y=170, width=76)
-send_to_fcp_btn = dict(x=150, y=170, width=150)
+run_stop_btn = dict(x=30, y=170, width=96)
+send_to_fcp_btn = dict(x=154, y=170, width=146)
 export_as_fcp_btn = dict(x=310, y=170, width=200)
 export_as_csv_btn = dict(x=520, y=170, width=130)
 
@@ -200,6 +200,7 @@ class GUI:
     def on_slider_move(val):
       int_val = int(float(val))
       self.sensitivity_val.set(int_val)
+      self.stop_scene_detect()
       self.root.after(0, lambda: self.last_used.save_sensitivity(int_val))
 
     self.sensitivity_slider = ttk.Scale(
@@ -221,6 +222,7 @@ class GUI:
         value = float(self.min_scene_secs.get())
         if value < 0:
           self.min_scene_secs.set(str(0))
+        self.stop_scene_detect()
         self.root.after(0, lambda: self.last_used.save_min_scene_seconds(self.min_scene_secs.get()))
       except ValueError as e:
         self.min_scene_secs.set(self.last_used.min_scene_seconds)
@@ -251,6 +253,7 @@ class GUI:
       else:
         self.video_hint.configure(text=self.v.summary)
         self.root.focus_force()
+        self.run_scene_detect()
 
       self.root.after(0, lambda: self.last_used.save_dir(self.initial_dir))
 
@@ -306,16 +309,13 @@ class GUI:
   def render_run_stop_btn(self):
     def on_click_run_stop():
       if self.running:
-        self.bus.emit_stop()
-        self.bus.unsubscribe_progress()
-        self.run_stop_button.config(text='Stop')
+        self.stop_scene_detect()
       else:
         self.run_scene_detect()
-        self.run_stop_button.config(text='Run')
 
     self.run_stop_button = ttk.Button(
       self.root,
-      text='Run',
+      text='▶ Run',
       command=on_click_run_stop)
     self.run_stop_button.place(**run_stop_btn)
 
@@ -429,6 +429,9 @@ class GUI:
         width=1
       )
 
+  def stop_scene_detect(self):
+    self.bus.emit_stop()
+    self.bus.unsubscribe_progress()
 
   def run_scene_detect(self):
     video = self.video_entry.get()
@@ -447,8 +450,7 @@ class GUI:
         v = self.v
         self.running = True
         self.on_progress(0, [])
-        self.sensitivity_slider.config(state='disabled')
-        self.run_stop_button.config(text='Stop')
+        self.run_stop_button.config(text='🛑 Stop')
         self.cuts = []
         self.cuts = detect_scene_changes(v, self.bus, sensitivity, PROXY_WIDTH, float(self.min_scene_secs.get()))
         self.bus.unsubscribe_progress()
@@ -456,8 +458,7 @@ class GUI:
         messagebox.showerror('Error', f'{e}')
       finally:
         self.running = False
-        self.sensitivity_slider.config(state='normal')
-        self.run_stop_button.config(text='Run')
+        self.run_stop_button.config(text='▶ Run')
 
     threading.Thread(target=run, daemon=True).start()
 
