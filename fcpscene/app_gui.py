@@ -25,7 +25,10 @@ from .detect_scene_changes import detect_scene_changes, CutTimes, count_scenes
 
 class LastUsed:
   def __init__(self):
-    self.init_defaults()
+    self.dir = str(Path.home() / 'Movies')
+    self.mode = 'clips'
+    self.sensitivity = DEFAULT_SENSITIVITY
+    self.min_scene_seconds = str(MIN_SCENE_SECS)
 
     self.settings = Path.home() / '.config' / 'fcpscene' / 'last-used.json'
     settings = self.read_settings()
@@ -35,18 +38,13 @@ class LastUsed:
       self.sensitivity = settings.get('sensitivity', self.sensitivity)
       self.min_scene_seconds = settings.get('min_scene_seconds', self.min_scene_seconds)
 
-  def init_defaults(self):
-    self.dir = str(Path.home() / 'Movies')
-    self.mode = 'clips'
-    self.sensitivity = DEFAULT_SENSITIVITY
-    self.min_scene_seconds = str(MIN_SCENE_SECS)
-
   def read_settings(self):
     try:
       with open(self.settings, 'r') as f:
         return json.load(f)
     except Exception:
       return None
+
 
   def save_dir(self, value):
     self.dir = value
