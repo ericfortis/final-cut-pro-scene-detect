@@ -9,6 +9,7 @@ import tkinter as tk
 from shutil import which
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
+from dataclasses import dataclass
 
 from fcpscene import __version__, __repo_url__, __title__, PROXY_WIDTH, DEFAULT_SENSITIVITY, MIN_SCENE_SECS
 from .utils import debounce
@@ -78,39 +79,44 @@ class LastUsed:
       pass
 
 
-root_win = dict(width=680, height=300)
+@dataclass
+class Style:
+  root_win = dict(width=680, height=300)
 
-sensitivity_slider_width = 185
-sensitivity_label = dict(x=30, y=20)
-sensitivity_slider = dict(x=105, y=18)
-sensitivity_value = dict(x=295, y=19)
+  sensitivity_slider_width = 185
+  sensitivity_label = dict(x=30, y=20)
+  sensitivity_slider = dict(x=105, y=18)
+  sensitivity_value = dict(x=295, y=19)
 
-min_scene_secs_label = dict(x=366, y=20)
-min_scene_secs_entry = dict(x=493, y=17)
+  min_scene_secs_label = dict(x=366, y=20)
+  min_scene_secs_entry = dict(x=493, y=17)
 
-video_label = dict(x=30, y=70)
-video_entry = dict(x=102, y=65, width=450)
-video_browse_btn = dict(x=556, y=64)
-video_hint = dict(x=103, y=92)
+  video_label = dict(x=30, y=70)
+  video_entry = dict(x=102, y=65, width=450)
+  video_browse_btn = dict(x=556, y=64)
+  video_hint = dict(x=103, y=92)
 
-radio_clips = dict(x=205, y=143)
-radio_compound_clips = dict(x=265, y=143)
-radio_markers = dict(x=397, y=143)
+  radio_clips = dict(x=205, y=143)
+  radio_compound_clips = dict(x=265, y=143)
+  radio_markers = dict(x=397, y=143)
 
-run_stop_btn = dict(x=30, y=170, width=96)
-send_to_fcp_btn = dict(x=154, y=170, width=146)
-export_as_fcp_btn = dict(x=310, y=170, width=200)
-export_as_csv_btn = dict(x=520, y=170, width=130)
+  run_stop_btn = dict(x=30, y=170, width=96)
+  send_to_fcp_btn = dict(x=154, y=170, width=146)
+  export_as_fcp_btn = dict(x=310, y=170, width=200)
+  export_as_csv_btn = dict(x=520, y=170, width=130)
 
-progress_label = dict(x=30, y=225)
-hint_warning = dict(x=650, y=225)  # right aligned
+  progress_label = dict(x=30, y=225)
+  hint_warning = dict(x=650, y=225)  # right aligned
 
-progress_width = 620
-progress_height = 24
-progress_canvas = dict(x=30, y=248)
-progress_track_color = '#888'
-progress_color = '#304ffe'
-progress_cut_color = '#fff'
+  progress_width = 620
+  progress_height = 24
+  progress_canvas = dict(x=30, y=248)
+  progress_track_color = '#888'
+  progress_color = '#304ffe'
+  progress_cut_color = '#fff'
+
+
+style = Style()
 
 
 class GUI:
@@ -120,22 +126,14 @@ class GUI:
     GUI(root, video)
     root.mainloop()
 
-  @staticmethod
-  def check_dependencies():
-    if not which(ffmpeg):
-      messagebox.showerror('Error', 'Dependency "ffmpeg" not found')
-    elif not which(ffprobe):
-      messagebox.showerror('Error', 'Dependency "ffprobe" not found')
-
-
   def __init__(self, root, video):
-    self.check_dependencies()
+    check_dependencies()
 
     self.last_used = LastUsed()
-    self.initial_dir = self.last_used.dir
+    self.dir = self.last_used.dir
+    self.mode = tk.StringVar(value=self.last_used.mode)
     self.sensitivity_val = tk.IntVar(value=self.last_used.sensitivity)
     self.min_scene_secs = tk.StringVar(value=self.last_used.min_scene_seconds)
-    self.mode = tk.StringVar(value=self.last_used.mode)
 
     self.root = root
     self.center_window()
@@ -167,12 +165,11 @@ class GUI:
 
 
   def center_window(self):
-    width = root_win['width']
-    height = root_win['height']
+    width = style.root_win['width']
+    height = style.root_win['height']
     x = (self.root.winfo_screenwidth() - width) // 2
     y = (self.root.winfo_screenheight() - height) // 2
     self.root.geometry(f'{width}x{height}+{x}+{y}')
-
 
   def setup_menus(self):
     def open_help():
@@ -194,56 +191,67 @@ class GUI:
     self.root.config(menu=menubar)
 
 
+  def Label(self, styl, **kwargs):
+    el = ttk.Label(self.root, **kwargs)
+    el.place(**styl)
+    return el
+
+  def Button(self, styl, **kwargs):
+    el = ttk.Button(self.root, **kwargs)
+    el.place(**styl)
+    return el
+
+
   def render_sensitivity_slider(self):
-    ttk.Label(self.root, text='Sensitivity').place(**sensitivity_label)
+    self.Label(style.sensitivity_label, text='Sensitivity')
 
-    def on_slider_move(val):
-      int_val = int(float(val))
-      self.sensitivity_val.set(int_val)
-      self.stop_scene_detect()
-      self.root.after(0, lambda: self.last_used.save_sensitivity(int_val))
-
-    self.sensitivity_slider = ttk.Scale(
+    ttk.Scale(
       self.root,
       from_=0,
       to=100,
       orient='horizontal',
-      command=on_slider_move,
+      command=self.act_change_sensitivity,
       value=self.sensitivity_val.get(),
-      length=sensitivity_slider_width
-    )
-    self.sensitivity_slider.place(**sensitivity_slider)
-    ttk.Label(self.root, textvariable=self.sensitivity_val).place(**sensitivity_value)
+      length=style.sensitivity_slider_width
+    ).place(**style.sensitivity_slider)
+
+    self.Label(style.sensitivity_value, textvariable=self.sensitivity_val)
+
+  def act_change_sensitivity(self, val):
+    int_val = int(float(val))
+    self.sensitivity_val.set(int_val)
+    self.stop_scene_detect()
+    self.root.after(0, lambda: self.last_used.save_sensitivity(int_val))
 
 
   def render_min_scene_seconds_entry(self):
-    def on_change(event=None):
-      try:
-        value = float(self.min_scene_secs.get())
-        if value < 0:
-          self.min_scene_secs.set(str(0))
-        self.stop_scene_detect()
-        self.root.after(0, lambda: self.last_used.save_min_scene_seconds(self.min_scene_secs.get()))
-      except ValueError as e:
-        self.min_scene_secs.set(self.last_used.min_scene_seconds)
-        messagebox.showerror('Invalid Input', f'Invalid minimum scene seconds: {e}')
-
-    ttk.Label(self.root, text='Min Scene Seconds').place(**min_scene_secs_label)
+    self.Label(style.min_scene_secs_label, text='Min Scene Seconds')
     self.min_scene_secs_entry = ttk.Entry(
       self.root,
       textvariable=self.min_scene_secs,
       width=5
     )
-    self.min_scene_secs_entry.place(**min_scene_secs_entry)
-    self.min_scene_secs_entry.bind('<FocusOut>', on_change)
-    self.min_scene_secs_entry.bind('<Return>', on_change)
+    self.min_scene_secs_entry.place(**style.min_scene_secs_entry)
+    self.min_scene_secs_entry.bind('<FocusOut>', self.act_change_min_scene_seconds)
+    self.min_scene_secs_entry.bind('<Return>', self.act_change_min_scene_seconds)
+
+  def act_change_min_scene_seconds(self, event=None):
+    try:
+      value = float(self.min_scene_secs.get())
+      if value < 0:
+        self.min_scene_secs.set(str(0))
+      self.stop_scene_detect()
+      self.root.after(0, lambda: self.last_used.save_min_scene_seconds(self.min_scene_secs.get()))
+    except ValueError as e:
+      self.min_scene_secs.set(self.last_used.min_scene_seconds)
+      messagebox.showerror('Invalid Input', f'Invalid minimum scene seconds: {e}')
 
 
   def render_video_picker(self, initial_video):
     def load_video(file_path):
       if not file_path or not Path(file_path).exists():
         return
-      self.initial_dir = str(Path(file_path).parent)
+      self.dir = str(Path(file_path).parent)
       self.video_entry.delete(0, tk.END)
       self.video_entry.insert(0, file_path)
       self.v = VideoAttr(file_path)
@@ -255,99 +263,108 @@ class GUI:
         self.root.focus_force()
         self.run_scene_detect()
 
-      self.root.after(0, lambda: self.last_used.save_dir(self.initial_dir))
+      self.root.after(0, lambda: self.last_used.save_dir(self.dir))
 
     def browse_file():
       file_path = filedialog.askopenfilename(
         title='Select Video File',
-        initialdir=self.initial_dir,
+        initialdir=self.dir,
         filetypes=[
           ('Final Cut Pro-Compatible Files', '*.mp4 *.mov *.avi *.m4v *.3gp *.3g2 *.mts *.m2ts *.mxf'),
           ('All files', '*.*')
         ])
       load_video(file_path)
 
-    ttk.Label(self.root, text='Video File').place(**video_label)
+    self.Label(style.video_label, text='Video File')
     self.video_entry = ttk.Entry(self.root)
-    self.video_entry.place(**video_entry)
-    ttk.Button(self.root, text='Browse', command=browse_file).place(**video_browse_btn)
-    self.video_hint = ttk.Label(self.root, text='Place video in your Home or Movies directory')
-    self.video_hint.place(**video_hint)
+    self.video_entry.place(**style.video_entry)
+    self.Button(style.video_browse_btn, text='Browse', command=browse_file)
+    self.video_hint = self.Label(style.video_hint, text='Place video in your Home or Movies directory')
 
     self.root.after(0, lambda: load_video(initial_video))
 
 
   def render_mode_radio(self):
-    def on_mode_change(*args):
-      self.handle_hint_warning(visible=self.mode.get() == 'compound')
-      self.root.after(0, lambda: self.last_used.save_mode(self.mode.get()))
-
-    self.mode.trace_add('write', on_mode_change)
-
+    self.mode.trace_add('write', self.act_change_mode)
     ttk.Radiobutton(
       self.root,
       text='Clips',
+      value='clips',
       variable=self.mode,
-      value='clips'
-    ).place(**radio_clips)
+    ).place(**style.radio_clips)
 
     ttk.Radiobutton(
       self.root,
       text='Compound Clips',
+      value='compound',
       variable=self.mode,
-      value='compound'
-    ).place(**radio_compound_clips)
+    ).place(**style.radio_compound_clips)
 
     ttk.Radiobutton(
       self.root,
       text='Markers',
+      value='markers',
       variable=self.mode,
-      value='markers'
-    ).place(**radio_markers)
+    ).place(**style.radio_markers)
+
+  def act_change_mode(self, *args):
+    self.handle_hint_warning(visible=self.mode.get() == 'compound')
+    self.root.after(0, lambda: self.last_used.save_mode(self.mode.get()))
 
 
   def render_run_stop_btn(self):
-    def on_click_run_stop():
-      if self.running:
-        self.stop_scene_detect()
-      else:
-        self.run_scene_detect()
-
-    self.run_stop_button = ttk.Button(
-      self.root,
+    self.run_stop_button = self.Button(
+      style.run_stop_btn,
       text='▶ Run',
-      command=on_click_run_stop)
-    self.run_stop_button.place(**run_stop_btn)
+      command=self.act_toggle_run_stop)
+
+  def act_toggle_run_stop(self):
+    if self.running:
+      self.stop_scene_detect()
+    else:
+      self.run_scene_detect()
 
 
   def render_send_to_fcp_btn(self):
-    def on_click():
-      if not self.cuts:
-        messagebox.showinfo('No cuts found', 'No scene changes were detected')
-      else:
-        xml = self.process_fcpxml()
-        self.root.after(0, lambda: save_and_send(xml))
-
-    self.send_to_fcp_btn = ttk.Button(
-      self.root,
+    self.Button(
+      style.send_to_fcp_btn,
       text='Send to Final Cut',
-      command=on_click)
-    self.send_to_fcp_btn.place(**send_to_fcp_btn)
+      command=self.act_send_to_fcp)
+
+  def act_send_to_fcp(self):
+    if not self.cuts:
+      messagebox.showinfo('No cuts found', 'No scene changes were detected')
+    else:
+      xml = self.process_fcpxml()
+      self.root.after(0, lambda: save_and_send(xml))
 
 
   def render_export_as_fcp_btn(self):
-    def on_click():
-      if not self.cuts:
-        messagebox.showinfo('No cuts found', 'No scene changes were detected')
-      else:
-        xml = self.process_fcpxml()
-        self.root.after(0, lambda: save_fcpxml(xml, self.v.path.with_suffix('.fcpxml').name))
-
-    self.export_as_fcp_btn = ttk.Button(
-      self.root,
+    self.Button(
+      style.export_as_fcp_btn,
       text='Export as Final Cut Project',
-      command=on_click)
-    self.export_as_fcp_btn.place(**export_as_fcp_btn)
+      command=self.act_export_as_fcp)
+
+  def act_export_as_fcp(self):
+    if not self.cuts:
+      messagebox.showinfo('No cuts found', 'No scene changes were detected')
+    else:
+      xml = self.process_fcpxml()
+      self.root.after(0, lambda: save_fcpxml(xml, self.v.path.with_suffix('.fcpxml').name))
+
+
+  def render_export_as_csv_btn(self):
+    self.Button(
+      style.export_as_csv_btn,
+      text='Export as CSV',
+      command=self.act_export_as_csv)
+
+  def act_export_as_csv(self):
+    if not self.cuts:
+      messagebox.showinfo('No cuts found', 'No scene changes were detected')
+    else:
+      csv = to_csv_clips(self.cuts)
+      self.root.after(0, lambda: save_csv(csv, self.v.path.with_suffix('.csv').name))
 
 
   def process_fcpxml(self):
@@ -355,32 +372,15 @@ class GUI:
     if self.mode.get() == 'compound': return to_fcpxml_compound_clips(self.cuts, self.v)
     return to_fcpxml_clips(self.cuts, self.v)
 
-
-  def render_export_as_csv_btn(self):
-    def on_click():
-      if not self.cuts:
-        messagebox.showinfo('No cuts found', 'No scene changes were detected')
-      else:
-        csv = to_csv_clips(self.cuts)
-        self.root.after(0, lambda: save_csv(csv, self.v.path.with_suffix('.csv').name))
-
-    self.export_as_csv_btn = ttk.Button(
-      self.root,
-      text='Export as CSV',
-      command=on_click)
-    self.export_as_csv_btn.place(**export_as_csv_btn)
-
   def render_hint_warning(self):
-    self.hint_warning = ttk.Label(
-      self.root,
-      text='Your Library must have an event called "fcpscene"')
+    self.hint_warning = self.Label(style.hint_warning, text='Your Library must have an event called "fcpscene"')
     self.hint_warning.update_idletasks()
-    hint_warning['x'] -= self.hint_warning.winfo_reqwidth()
+    style.hint_warning['x'] -= self.hint_warning.winfo_reqwidth()
     self.handle_hint_warning(self.mode.get() == 'compound')
 
   def handle_hint_warning(self, visible):
     if visible:
-      self.hint_warning.place(**hint_warning)
+      self.hint_warning.place(**style.hint_warning)
     else:
       self.hint_warning.place_forget()
 
@@ -388,17 +388,17 @@ class GUI:
     self.n_cuts = tk.IntVar()
     self.progress = tk.DoubleVar()
     self.progress_label = tk.StringVar()
-    ttk.Label(self.root, textvariable=self.progress_label).place(**progress_label)
+    self.Label(style.progress_label, textvariable=self.progress_label)
 
   def render_progress_timeline(self):
     self.progress_canvas = tk.Canvas(
       self.root,
-      width=progress_width,
-      height=progress_height,
-      bg=progress_track_color,
+      width=style.progress_width,
+      height=style.progress_height,
+      bg=style.progress_track_color,
       highlightthickness=0
     )
-    self.progress_canvas.place(**progress_canvas)
+    self.progress_canvas.place(**style.progress_canvas)
 
   def set_progress_label(self, progress, n_scenes):
     self.progress.set(progress * 100)
@@ -414,18 +414,18 @@ class GUI:
     self.progress_canvas.delete('all')
     self.progress_canvas.create_rectangle(
       0, 0,
-      progress_width * progress,
-      progress_height,
-      fill=progress_color,
+      style.progress_width * progress,
+      style.progress_height,
+      fill=style.progress_color,
       outline=''
     )
     cuts = self.cuts[1:] if progress != 1 else self.cuts[1:-1]
     for cut in cuts:
-      x = cut / self.v.duration * progress_width
+      x = cut / self.v.duration * style.progress_width
       self.progress_canvas.create_line(
         x, 0,
-        x, progress_height,
-        fill=progress_cut_color,
+        x, style.progress_height,
+        fill=style.progress_cut_color,
         width=1
       )
 
@@ -501,3 +501,10 @@ def write(txt, filename):
     messagebox.showerror('Write Error', f'Permission denied:\n{e}')
   except Exception as e:
     messagebox.showerror('Write Error', f'Failed to write file:\n{e}')
+
+
+def check_dependencies():
+  if not which(ffmpeg):
+    messagebox.showerror('Error', 'Dependency "ffmpeg" not found')
+  elif not which(ffprobe):
+    messagebox.showerror('Error', 'Dependency "ffprobe" not found')
