@@ -6,6 +6,7 @@ import threading
 import subprocess
 import webbrowser
 import tkinter as tk
+from enum import Enum
 from shutil import which
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
@@ -23,20 +24,44 @@ from .to_fcpxml_compound_clips import to_fcpxml_compound_clips
 from .detect_scene_changes import detect_scene_changes, CutTimes, count_scenes
 
 
+class ExportMode(str, Enum):
+  CLIPS = 'clips'
+  MARKERS = 'markers'
+  COMPOUND_CLIPS = 'compound-clips'
+
+
 class LastUsed:
   def __init__(self):
     self.dir = str(Path.home() / 'Movies')
-    self.mode = 'clips'
+    self.mode = ExportMode.CLIPS.value
     self.sensitivity = DEFAULT_SENSITIVITY
     self.min_scene_seconds = str(MIN_SCENE_SECS)
 
     self.settings = Path.home() / '.config' / 'fcpscene' / 'last-used.json'
     settings = self.read_settings()
     if settings:
-      self.dir = settings.get('dir', self.dir)
-      self.mode = settings.get('mode', self.mode)
-      self.sensitivity = settings.get('sensitivity', self.sensitivity)
-      self.min_scene_seconds = settings.get('min_scene_seconds', self.min_scene_seconds)
+      last_used_dir = settings.get('dir')
+      if last_used_dir and Path(last_used_dir).is_dir():
+        self.dir = last_used_dir
+
+      mode = settings.get('mode')
+      if mode in ExportMode._value2member_map_:
+        self.mode = mode
+
+      try:
+        s = int(settings.get('sensitivity'))
+        if 0 <= s <= 100:
+          self.sensitivity = s
+      except (TypeError, ValueError):
+        pass
+
+      try:
+        mss = float(settings.get('min_scene_seconds'))
+        if mss >= 0:
+          self.min_scene_seconds = str(mss)
+      except (TypeError, ValueError):
+        pass
+
 
   def read_settings(self):
     try:
@@ -287,26 +312,26 @@ class GUI:
     ttk.Radiobutton(
       self.root,
       text='Clips',
-      value='clips',
+      value=ExportMode.CLIPS.value,
       variable=self.mode,
     ).place(**style.radio_clips)
 
     ttk.Radiobutton(
       self.root,
       text='Compound Clips',
-      value='compound',
+      value=ExportMode.COMPOUND_CLIPS.value,
       variable=self.mode,
     ).place(**style.radio_compound_clips)
 
     ttk.Radiobutton(
       self.root,
       text='Markers',
-      value='markers',
+      value=ExportMode.MARKERS.value,
       variable=self.mode,
     ).place(**style.radio_markers)
 
   def act_change_mode(self, *args):
-    self.handle_hint_warning(visible=self.mode.get() == 'compound')
+    self.handle_hint_warning(visible=self.mode.get() == ExportMode.COMPOUND_CLIPS.value)
     self.root.after(0, lambda: self.last_used.save_mode(self.mode.get()))
 
 
@@ -366,15 +391,15 @@ class GUI:
 
 
   def process_fcpxml(self):
-    if self.mode.get() == 'markers': return to_fcpxml_markers(self.cuts, self.v)
-    if self.mode.get() == 'compound': return to_fcpxml_compound_clips(self.cuts, self.v)
+    if self.mode.get() == ExportMode.MARKERS.value: return to_fcpxml_markers(self.cuts, self.v)
+    if self.mode.get() == ExportMode.COMPOUND_CLIPS.value: return to_fcpxml_compound_clips(self.cuts, self.v)
     return to_fcpxml_clips(self.cuts, self.v)
 
   def render_hint_warning(self):
     self.hint_warning = self.Label(style.hint_warning, text='Your Library must have an event called "fcpscene"')
     self.hint_warning.update_idletasks()
     style.hint_warning['x'] -= self.hint_warning.winfo_reqwidth()
-    self.handle_hint_warning(self.mode.get() == 'compound')
+    self.handle_hint_warning(self.mode.get() == ExportMode.COMPOUND_CLIPS.value)
 
   def handle_hint_warning(self, visible):
     if visible:
