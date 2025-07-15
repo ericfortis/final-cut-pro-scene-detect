@@ -11,7 +11,7 @@ from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 
 from fcpscene import __version__, __repo_url__, __title__, PROXY_WIDTH, DEFAULT_SENSITIVITY, MIN_SCENE_SECS
-from .utils import throttle
+from .utils import debounce
 from .ffmpeg import ffmpeg, ffprobe
 from .event_bus import EventBus
 from .video_attr import VideoAttr
@@ -30,15 +30,15 @@ class LastUsed:
     settings = self.read_settings()
     if settings:
       self.dir = settings.get('dir', self.dir)
+      self.mode = settings.get('mode', self.mode)
       self.sensitivity = settings.get('sensitivity', self.sensitivity)
       self.min_scene_seconds = settings.get('min_scene_seconds', self.min_scene_seconds)
-      self.mode = settings.get('mode', self.mode)
 
   def init_defaults(self):
     self.dir = str(Path.home() / 'Movies')
+    self.mode = 'clips'
     self.sensitivity = DEFAULT_SENSITIVITY
     self.min_scene_seconds = str(MIN_SCENE_SECS)
-    self.mode = 'clips'
 
   def read_settings(self):
     try:
@@ -51,6 +51,10 @@ class LastUsed:
     self.dir = value
     self.save()
 
+  def save_mode(self, value):
+    self.mode = value
+    self.save()
+
   def save_sensitivity(self, value):
     self.sensitivity = value
     self.save()
@@ -59,21 +63,17 @@ class LastUsed:
     self.min_scene_seconds = value
     self.save()
 
-  def save_mode(self, value):
-    self.mode = value
-    self.save()
-
-  @throttle(0.5)
+  @debounce(0.5)
   def save(self):
     try:
       self.settings.parent.mkdir(parents=True, exist_ok=True)
       with open(self.settings, 'w') as f:
         json.dump({
           'dir': self.dir,
+          'mode': self.mode,
           'sensitivity': self.sensitivity,
           'min_scene_seconds': self.min_scene_seconds,
-          'mode': self.mode
-        }, f, indent=2)
+        }, f)
     except Exception:
       pass
 
