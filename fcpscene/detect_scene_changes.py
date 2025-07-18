@@ -10,12 +10,12 @@ CutTimes = list[float]
 """[Start + [SceneChanges] + End] in seconds"""
 
 
-def count_scenes(progress: float, cuts: CutTimes) -> int:
+def count_scenes(cuts: CutTimes, progress: float = 1) -> int:
   if progress < 1:
     return len(cuts)
   return len(cuts) - 1 # Exclude end
 
-def extract_scene_changes(cuts: CutTimes, progress = 1):
+def extract_scene_changes(cuts: CutTimes, progress: float = 1) -> list[float]:
   if progress < 1:
     return cuts[1:] # not in use
   return cuts[1:-1]

@@ -33,7 +33,7 @@ def cuts_to_clips(cuts: CutTimes, v: VideoAttr) -> list[Clip]:
     FCP uses incremental reference IDs. `r1` and `r2` are reserved in our templates.
   """
   first_available_ref_id = 3  # constant
-  seq_digits = len(str(count_scenes(1, cuts)))
+  seq_digits = len(str(count_scenes(cuts)))
 
   cut_frames = [int(s * v.fps + 0.9999) for s in cuts]  # ceil with threshold
 

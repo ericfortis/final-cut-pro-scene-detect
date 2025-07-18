@@ -146,7 +146,7 @@ def validate_percent(value):
 
 def print_progress(progress, cuts):
   bar = progress_bar(progress)
-  print(f'\r{bar} {int(progress * 100)}% ({count_scenes(progress, cuts)} Scenes)  ', end='', flush=True)
+  print(f'\r{bar} {int(progress * 100)}% ({count_scenes(cuts, progress)} Scenes)  ', end='', flush=True)
 
 
 def progress_bar(progress):

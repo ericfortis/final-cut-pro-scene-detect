@@ -429,7 +429,7 @@ class GUI:
 
   def on_progress(self, progress: float, cuts: CutTimes):
     self.cuts = cuts
-    self.set_progress_label(progress, max(count_scenes(progress, cuts), 0))
+    self.set_progress_label(progress, max(count_scenes(cuts, progress), 0))
     self.update_progress_canvas(progress)
     self.root.update_idletasks()
 
