@@ -15,6 +15,11 @@ def count_scenes(progress: float, cuts: CutTimes) -> int:
     return len(cuts)
   return len(cuts) - 1 # Exclude end
 
+def extract_scene_changes(cuts: CutTimes, progress = 1):
+  if progress < 1:
+    return cuts[1:] # not in use
+  return cuts[1:-1]
+
 
 def detect_scene_changes(v, bus, sensitivity, proxy_width, min_scene_secs, start_time=0) -> CutTimes:
   """Finds the timestamps of scene changes using FFmpeg

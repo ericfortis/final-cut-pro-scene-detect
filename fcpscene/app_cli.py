@@ -13,7 +13,7 @@ from .to_csv_clips import to_csv_clips
 from .to_fcpxml_clips import to_fcpxml_clips
 from .to_fcpxml_markers import to_fcpxml_markers
 from .to_fcpxml_compound_clips import to_fcpxml_compound_clips
-from .detect_scene_changes import detect_scene_changes, count_scenes
+from .detect_scene_changes import detect_scene_changes, count_scenes, extract_scene_changes
 
 
 def main():
@@ -72,8 +72,8 @@ def main():
       '    clips: Normal clips\n'
       '    compound-clips: Wraps each clip in its own compound clip\n'
       '    markers: Only add markers\n'
-      '    count: Print cut count (no file is saved)\n'
-      '    list: Print cut times (no file is saved)\n'
+      '    count: Print scene changes count (no file is saved)\n'
+      '    list: Print scene changes times (no file is saved)\n'
     )
   )
   parser.add_argument(
@@ -113,11 +113,11 @@ def main():
 
 def process_cuts(cuts, v, mode, out_file):
   if mode == 'count':
-    print(len(cuts) - 2)
+    print(len(extract_scene_changes(cuts)))
     return
 
   if mode == 'list':
-    print(*cuts[1:-1])
+    print(*extract_scene_changes(cuts))
     return
 
   if out_file and out_file.endswith('.csv'):
