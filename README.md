@@ -347,6 +347,14 @@ Instead of cutting the timeline, there are many tools for splitting the video in
 
 <br>
 
+## Acknowledgments
+- [FFmpeg](https://ffmpeg.org/) for detecting scene changes
+- [tkinter](https://docs.python.org/3/library/tkinter.html) for the GUI
+- [Python](https://www.python.org/) programming language
+- [AppleScript](https://developer.apple.com/library/archive/documentation/AppleScript/Conceptual/) programming language
+- [Homebrew](https://brew.sh/) for distribution
+
+
 ## License
 
 [MIT](LICENSE) © 2025 Eric Fortis
