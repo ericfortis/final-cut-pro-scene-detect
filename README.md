@@ -7,8 +7,8 @@ project with cuts at those scene changes, using either compound or normal clips.
 
 ![](README-gui.png)
 
-That example processed a video with five cuts, so the Final Cut timeline has six
-compound clips.
+That example processed a video with five cuts, so the timeline has six compound
+clips.
 
 ![](./README-example.png)
 
