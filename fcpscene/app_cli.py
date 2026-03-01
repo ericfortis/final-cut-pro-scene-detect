@@ -37,7 +37,7 @@ def main():
     version=__version__
   )
   parser.add_argument(
-    '--gui',
+    '-g', '--gui',
     action='store_true',
     help='Open the GUI instead of running in CLI mode'
   )

@@ -21,7 +21,7 @@ def extract_scene_changes(cuts: CutTimes, progress: float = 1) -> list[float]:
   return cuts[1:-1]
 
 
-def detect_scene_changes(v, bus, sensitivity, proxy_width, min_scene_secs, start_time=0) -> CutTimes:
+def detect_scene_changes(v, bus, sensitivity, proxy_width, min_scene_secs, start_time=0) -> CutTimes | None:
   """Finds the timestamps of scene changes using FFmpeg
 
   Video filter chain:
@@ -74,14 +74,16 @@ def detect_scene_changes(v, bus, sensitivity, proxy_width, min_scene_secs, start
         if match:
           try:
             cut_time = float(match.group(1))
-            if (cut_time - cuts[-1]) >= min_scene_secs:
+            # Partially corrupted videos can trigger cuts outside the duration
+            if (cut_time - cuts[-1]) >= min_scene_secs and cut_time < v.duration:
               cuts.append(cut_time)
               bus.emit_progress(cut_time / v.duration, cuts)
           except ValueError:
             pass
 
       process.wait()
-      cuts.append(v.duration)
+      if (v.duration - cuts[-1]) >= min_scene_secs:
+        cuts.append(v.duration)
       bus.emit_progress(1, cuts)
 
       if not stopped_from_ui and process.returncode != 0:
