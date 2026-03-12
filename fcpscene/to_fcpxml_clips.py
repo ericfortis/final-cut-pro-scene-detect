@@ -23,7 +23,7 @@ def to_fcpxml_clips(cuts: CutTimes, v: VideoAttr) -> str:
   </resources>
   <library>
     <event name="fcpscene">
-      <project name="{v.stem}">
+      <project name="{v.name}">
         <sequence format="r1" tcStart="0s">
           <spine>'''
 

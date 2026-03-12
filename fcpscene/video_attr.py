@@ -4,6 +4,7 @@ from pathlib import Path
 from dataclasses import dataclass, fields, Field
 from urllib.parse import quote
 from collections.abc import Sequence
+from xml.sax.saxutils import escape
 
 from .utils import format_seconds, clean_decimals
 from .ffmpeg import ffprobe
@@ -32,7 +33,7 @@ class VideoAttr(FFProbe):
     self._runtime_error = None
 
     self.path = Path(video)
-    self.stem = self.path.stem
+    self.name = escape(self.path.stem)
 
     self.parse(fields(FFProbe))
     if not self.error:

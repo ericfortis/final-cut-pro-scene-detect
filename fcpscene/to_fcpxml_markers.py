@@ -24,7 +24,7 @@ def to_fcpxml_markers(cuts: CutTimes, v: VideoAttr) -> str:
   </resources>
   <library>
     <event name="fcpscene">
-      <project name="{v.stem}">
+      <project name="{v.name}">
         <sequence format="r1" tcStart="0s">
           <spine>
             <asset-clip ref="r2" offset="0s">'''
