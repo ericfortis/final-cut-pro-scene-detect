@@ -18,6 +18,7 @@ from .ffmpeg import ffmpeg, ffprobe
 from .event_bus import EventBus
 from .video_attr import VideoAttr
 from .to_csv_clips import to_csv_clips
+from .to_file_clips import to_file_clips
 from .to_fcpxml_clips import to_fcpxml_clips
 from .to_fcpxml_markers import to_fcpxml_markers
 from .to_fcpxml_compound_clips import to_fcpxml_compound_clips
@@ -119,13 +120,16 @@ class Style:
   video_browse_btn = dict(x=556, y=64)
   video_hint = dict(x=103, y=92)
 
-  radio_clips = dict(x=205, y=143)
-  radio_compound_clips = dict(x=265, y=143)
-  radio_markers = dict(x=397, y=143)
+  radio_clips = dict(x=189, y=147)
+  radio_compound_clips = dict(x=249, y=147)
+  radio_markers = dict(x=380, y=147)
 
-  run_stop_btn = dict(x=30, y=170, width=96)
-  send_to_fcp_btn = dict(x=154, y=170, width=146)
-  export_as_fcp_btn = dict(x=310, y=170, width=200)
+  run_stop_btn = dict(x=30, y=170, width=95)
+
+  send_to_fcp_btn = dict(x=147, y=170, width=144)
+  export_as_fcp_btn = dict(x=295, y=170, width=200)
+
+  export_as_files_btn = dict(x=520, y=143, width=130)
   export_as_csv_btn = dict(x=520, y=170, width=130)
 
   progress_label = dict(x=30, y=225)
@@ -181,6 +185,7 @@ class GUI:
     self.render_send_to_fcp_btn()
     self.render_export_as_fcp_btn()
     self.render_export_as_csv_btn()
+    self.render_export_as_files_btn()
 
     self.render_progress_label()
     self.render_hint_warning()
@@ -388,6 +393,35 @@ class GUI:
     else:
       csv = to_csv_clips(self.cuts)
       self.root.after(0, lambda: save_csv(csv, self.v.path.with_suffix('.csv').name))
+
+
+  def render_export_as_files_btn(self):
+    self.export_files_btn = self.Button(
+      style.export_as_files_btn,
+      text='Export as Files',
+      command=self.act_export_as_files)
+
+  def act_export_as_files(self):
+    if not self.cuts:
+      messagebox.showinfo('No cuts found', 'No scene changes were detected')
+      return
+
+    if self.export_files_btn.cget('text') == 'Stop Exporting':
+      self.bus.emit_stop()
+      return
+
+    def run():
+      self.export_files_btn.config(text='Stop Exporting')
+      try:
+        to_file_clips(self.cuts, self.v, self.bus)
+      except subprocess.CalledProcessError as e:
+        self.root.after(0, lambda: messagebox.showerror('Export Error', f'FFmpeg failed:\n{e.stderr.decode()}'))
+      except Exception as e:
+        self.root.after(0, lambda: messagebox.showerror('Export Error', f'An error occurred during export:\n{e}'))
+      finally:
+        self.root.after(0, lambda: self.export_files_btn.config(text='Export as Files'))
+
+    threading.Thread(target=run, daemon=True).start()
 
 
   def process_fcpxml(self):

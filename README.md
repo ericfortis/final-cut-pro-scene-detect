@@ -190,6 +190,7 @@ Choices:
 - **clips**: Normal clips (default)
 - **compound-clips**: Wraps each clip in its own compound clip
 - **markers**: Only add markers
+- **files**: Export scenes as individual video files
 - **count**: Print scene changes count (no file is saved)
 - **list**: Print scene changes times (no file is saved)
 
@@ -205,6 +206,20 @@ Do not print video summary and progress.
 ```shell
 fcpscene --quiet my-video.mp4
 ```
+
+<br/>
+
+
+#### Export Scenes as Files
+Creates a folder named after the video (without the extension)
+in the same directory and saves the clips there.
+
+```shell
+fcpscene --mode files my-video.mp4
+```
+
+
+
 
 <br/>
 

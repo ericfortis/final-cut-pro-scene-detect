@@ -1,12 +1,12 @@
 from .video_attr import VideoAttr
-from .cuts_to_clips import cuts_to_clips
+from .cuts_to_clips import cuts_to_fcp_clips
 from .detect_scene_changes import CutTimes
 
 
 def to_fcpxml_markers(cuts: CutTimes, v: VideoAttr) -> str:
   """Adds markers on a timeline given cut times in seconds."""
 
-  clips = cuts_to_clips(cuts, v)
+  clips = cuts_to_fcp_clips(cuts, v)
   frame_duration = f'{v.fps_denominator}/{v.fps_numerator}s'
 
   xml = f'''<?xml version="1.0" encoding="UTF-8"?>

@@ -10,6 +10,7 @@ from .ffmpeg import ffmpeg, ffprobe
 from .video_attr import VideoAttr
 from .event_bus import EventBus
 from .to_csv_clips import to_csv_clips
+from .to_file_clips import to_file_clips
 from .to_fcpxml_clips import to_fcpxml_clips
 from .to_fcpxml_markers import to_fcpxml_markers
 from .to_fcpxml_compound_clips import to_fcpxml_compound_clips
@@ -65,13 +66,14 @@ def main():
   parser.add_argument(
     '-m', '--mode',
     default='clips',
-    choices=['clips', 'compound-clips', 'markers', 'count', 'list'],
+    choices=['clips', 'compound-clips', 'markers', 'files', 'count', 'list'],
     help=(
       '(default: %(default)s)\n'
       'Options:\n'
       '    clips: Normal clips\n'
       '    compound-clips: Wraps each clip in its own compound clip\n'
       '    markers: Only add markers\n'
+      '    files: Export scenes as individual video files\n'
       '    count: Print scene changes count (no file is saved)\n'
       '    list: Print scene changes times (no file is saved)\n'
     )
@@ -92,7 +94,7 @@ def main():
   if args.video is None:
     parser.error('The "video" is required')
 
-  if args.output and not args.output.endswith(('.csv', '.fcpxml')):
+  if args.output and not args.output.endswith(('.csv', '.fcpxml')) and args.mode != 'files':
     parser.error('Invalid output format. Only .fcpxml and .csv are supported')
 
   v = VideoAttr(args.video.name)
@@ -106,18 +108,24 @@ def main():
 
   try:
     cuts = detect_scene_changes(v, bus, args.sensitivity, args.proxy_width, args.min_scene_seconds)
-    process_cuts(cuts, v, args.mode, args.output)
+    process_cuts(cuts, v, args.mode, args.output, bus)
   except Exception as e:
     exit_error(f'Unexpected error while running ffmpeg: {e}')
 
 
-def process_cuts(cuts, v, mode, out_file):
+def process_cuts(cuts, v, mode, out_file, bus):
   if mode == 'count':
     print(len(extract_scene_changes(cuts)))
     return
 
   if mode == 'list':
     print(*extract_scene_changes(cuts))
+    return
+
+  if mode == 'files':
+    print('Exporting file clips…')
+    to_file_clips(cuts, v, bus)
+    print(f'\nDone.')
     return
 
   if out_file and out_file.endswith('.csv'):

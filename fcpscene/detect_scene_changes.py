@@ -93,6 +93,7 @@ def detect_scene_changes(v, bus, sensitivity, proxy_width, min_scene_secs, start
   except KeyboardInterrupt:  # Ctrl+C terminates analysis, and we create a file with the progress so far
     if process:
       process.terminate()
+    return cuts
   except Exception:
     raise
   finally:

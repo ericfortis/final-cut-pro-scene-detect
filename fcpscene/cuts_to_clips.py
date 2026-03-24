@@ -5,7 +5,7 @@ from .detect_scene_changes import CutTimes, count_scenes
 
 
 @dataclass
-class Clip:
+class FcpClip:
   """Describes a Final Cut Pro clip
 
   Attributes:
@@ -20,7 +20,21 @@ class Clip:
   duration: str
 
 
-def cuts_to_clips(cuts: CutTimes, v: VideoAttr) -> list[Clip]:
+@dataclass
+class FileClip:
+  """Describes a generic file-based clip
+
+  Attributes:
+      seq: Suffix used in naming the clip (e.g., 001)
+      start: Start time in seconds
+      end: End time in seconds
+  """
+  seq: str
+  start: float
+  end: float
+
+
+def cuts_to_fcp_clips(cuts: CutTimes, v: VideoAttr) -> list[FcpClip]:
   """
   Background:
     The clip’s [left and right] edges — `offset` and `offset+duration` — are in
@@ -41,7 +55,7 @@ def cuts_to_clips(cuts: CutTimes, v: VideoAttr) -> list[Clip]:
   for i, frame in enumerate(cut_frames[:-1]):
     offset_ticks = frame * v.fps_denominator
     duration_ticks = (cut_frames[i + 1] - frame) * v.fps_denominator
-    clips.append(Clip(
+    clips.append(FcpClip(
       seq=f'{i + 1:0{seq_digits}}',
       ref_id=f'r{i + first_available_ref_id}',
       offset=to_fcp_time(offset_ticks, v.fps_numerator),
@@ -54,3 +68,16 @@ def to_fcp_time(num, den):
   if num % den:
     return f'{num}/{den}s'
   return f'{int(num / den)}s'
+
+
+
+def cuts_to_file_clips(cuts: CutTimes) -> list[FileClip]:
+  seq_digits = len(str(count_scenes(cuts)))
+  clips = []
+  for i, (start, end) in enumerate(zip(cuts, cuts[1:])):
+    clips.append(FileClip(
+      seq=f'{i + 1:0{seq_digits}}',
+      start=start,
+      end=end
+    ))
+  return clips

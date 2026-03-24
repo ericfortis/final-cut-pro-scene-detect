@@ -1,5 +1,5 @@
 from .video_attr import VideoAttr
-from .cuts_to_clips import cuts_to_clips
+from .cuts_to_clips import cuts_to_fcp_clips
 from .detect_scene_changes import CutTimes
 
 
@@ -17,7 +17,7 @@ def to_fcpxml_compound_clips(cuts: CutTimes, v: VideoAttr) -> str:
     exist in the FCP Library before importing the FCPXML.
   """
 
-  clips = cuts_to_clips(cuts, v)
+  clips = cuts_to_fcp_clips(cuts, v)
 
   xml = f'''<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE fcpxml>

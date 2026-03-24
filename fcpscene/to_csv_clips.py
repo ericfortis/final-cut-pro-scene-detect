@@ -1,4 +1,5 @@
 from .utils import clean_decimals
+from .cuts_to_clips import cuts_to_file_clips
 from .detect_scene_changes import CutTimes
 
 
@@ -13,6 +14,6 @@ def to_csv_clips(cuts: CutTimes) -> str:
     10,15
   """
   out = ['start,end']
-  for start, end in zip(cuts, cuts[1:]):
-    out.append(f'{clean_decimals(start)},{clean_decimals(end)}')
+  for clip in cuts_to_file_clips(cuts):
+    out.append(f'{clean_decimals(clip.start)},{clean_decimals(clip.end)}')
   return '\n'.join(out) + '\n'
