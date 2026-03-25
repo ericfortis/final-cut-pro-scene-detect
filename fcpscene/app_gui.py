@@ -129,6 +129,7 @@ class Style:
   send_to_fcp_btn = dict(x=147, y=170, width=144)
   export_as_fcp_btn = dict(x=295, y=170, width=200)
 
+  export_files_progress_label = dict(x=520, y=125)
   export_as_files_btn = dict(x=520, y=143, width=130)
   export_as_csv_btn = dict(x=520, y=170, width=130)
 
@@ -186,6 +187,7 @@ class GUI:
     self.render_export_as_fcp_btn()
     self.render_export_as_csv_btn()
     self.render_export_as_files_btn()
+    self.render_export_files_progress_label()
 
     self.render_progress_label()
     self.render_hint_warning()
@@ -401,6 +403,10 @@ class GUI:
       text='Export as Files',
       command=self.act_export_as_files)
 
+  def render_export_files_progress_label(self):
+    self.export_files_progress = tk.StringVar()
+    self.Label(style.export_files_progress_label, textvariable=self.export_files_progress)
+
   def act_export_as_files(self):
     if not self.cuts:
       messagebox.showinfo('No cuts found', 'No scene changes were detected')
@@ -409,6 +415,12 @@ class GUI:
     if self.export_files_btn.cget('text') == 'Stop Exporting':
       self.bus.emit_stop()
       return
+
+    def on_export_files_progress(current, total):
+      self.export_files_progress.set(f'{current}/{total}')
+      self.root.update_idletasks()
+
+    self.bus.subscribe_progress(on_export_files_progress)
 
     def run():
       self.export_files_btn.config(text='Stop Exporting')
@@ -419,6 +431,8 @@ class GUI:
       except Exception as e:
         self.root.after(0, lambda: messagebox.showerror('Export Error', f'An error occurred during export:\n{e}'))
       finally:
+        self.bus.unsubscribe_progress()
+        self.export_files_progress.set('')
         self.root.after(0, lambda: self.export_files_btn.config(text='Export as Files'))
 
     threading.Thread(target=run, daemon=True).start()

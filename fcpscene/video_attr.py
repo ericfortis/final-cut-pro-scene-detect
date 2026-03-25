@@ -97,9 +97,9 @@ class VideoAttr(FFProbe):
 
 
   def parse(self, attrs: Sequence[Field]):
-    attrs = [f.name for f in attrs]
-    json_out = self.ffprobe(*attrs)
-    for attr in attrs:
+    attr_names = [f.name for f in attrs]
+    json_out = self.ffprobe(*attr_names)
+    for attr in attr_names:
       setattr(self, attr, json_out.get(attr, ''))
 
   def ffprobe(self, *attrs) -> dict[str, str]:

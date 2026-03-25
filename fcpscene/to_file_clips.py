@@ -7,18 +7,8 @@ from .cuts_to_clips import cuts_to_file_clips
 from .detect_scene_changes import CutTimes
 
 
-def to_file_clips(
-  cuts: CutTimes,
-  v: VideoAttr,
-  bus: EventBus
-):
-  """Splits the original video into multiple files based on detected scenes.
-
-  Args:
-      cuts: List of cut timestamps.
-      v: Video attributes of the original video.
-      bus: EventBus for cancelling on stop signal.
-  """
+def to_file_clips(cuts: CutTimes, v: VideoAttr, bus: EventBus):
+  """Splits the original video into multiple files based on detected scenes"""
   output_dir = v.path.parent / v.path.stem
   output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -34,11 +24,12 @@ def to_file_clips(
   bus.subscribe_stop(on_stop)
 
   clips = cuts_to_file_clips(cuts)
-
+  n_clips = len(clips)
   try:
     for clip in clips:
       if is_stopped:
         break
+      bus.emit_progress(clip.seq, n_clips)
       cmd = [
         ffmpeg,
         '-y',
