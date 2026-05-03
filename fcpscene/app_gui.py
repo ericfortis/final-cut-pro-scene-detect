@@ -420,7 +420,7 @@ class GUI:
       self.export_files_progress.set(f'{current}/{total}')
       self.root.update_idletasks()
 
-    self.bus.subscribe_progress(on_export_files_progress)
+    self.bus.subscribe_export_progress(on_export_files_progress)
 
     def run():
       self.export_files_btn.config(text='Stop Exporting')
@@ -431,7 +431,7 @@ class GUI:
       except Exception as e:
         self.root.after(0, lambda: messagebox.showerror('Export Error', f'An error occurred during export:\n{e}'))
       finally:
-        self.bus.unsubscribe_progress()
+        self.bus.unsubscribe_export_progress()
         self.export_files_progress.set('')
         self.root.after(0, lambda: self.export_files_btn.config(text='Export as Files'))
 

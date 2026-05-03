@@ -29,7 +29,7 @@ def to_file_clips(cuts: CutTimes, v: VideoAttr, bus: EventBus):
     for clip in clips:
       if is_stopped:
         break
-      bus.emit_progress(clip.seq, n_clips)
+      bus.emit_export_progress(clip.seq, n_clips)
       cmd = [
         ffmpeg,
         '-y',
@@ -42,7 +42,7 @@ def to_file_clips(cuts: CutTimes, v: VideoAttr, bus: EventBus):
         str(output_dir / f'{v.path.stem}_{clip.seq}{v.path.suffix}')
       ]
       process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-      process.wait()
+      process.communicate()
       process = None
 
   except KeyboardInterrupt:

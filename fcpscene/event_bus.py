@@ -15,13 +15,23 @@ class EventBus:
 
 
   def emit_progress(self, *args):
-    self._emit('ffmpeg.progress', *args)
+    self._emit('detect.progress', *args)
 
   def subscribe_progress(self, callback):
-    self._subscribe('ffmpeg.progress', callback)
+    self._subscribe('detect.progress', callback)
 
   def unsubscribe_progress(self):
-    self._unsubscribe_all('ffmpeg.progress')
+    self._unsubscribe_all('detect.progress')
+
+
+  def emit_export_progress(self, *args):
+    self._emit('export.progress', *args)
+
+  def subscribe_export_progress(self, callback):
+    self._subscribe('export.progress', callback)
+
+  def unsubscribe_export_progress(self):
+    self._unsubscribe_all('export.progress')
 
 
   def emit_stop(self):

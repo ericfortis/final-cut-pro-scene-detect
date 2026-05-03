@@ -104,7 +104,7 @@ def main():
   bus = EventBus()
   if not args.quiet:
     print(v.summary)
-    bus.subscribe_progress(print_progress)
+    bus.subscribe_progress(print_detect_progress)
 
   try:
     cuts = detect_scene_changes(v, bus, args.sensitivity, args.proxy_width, args.min_scene_seconds)
@@ -123,7 +123,8 @@ def process_cuts(cuts, v, mode, out_file, bus):
     return
 
   if mode == 'files':
-    print('Exporting file clips…')
+    print('\nExporting clip files…')
+    bus.subscribe_export_progress(print_export_progress)
     to_file_clips(cuts, v, bus)
     print(f'\nDone.')
     return
@@ -152,10 +153,14 @@ def validate_percent(value):
   return f
 
 
-def print_progress(progress, cuts):
+def print_detect_progress(progress, cuts):
   bar = progress_bar(progress)
   print(f'\r{bar} {int(progress * 100)}% ({count_scenes(cuts, progress)} Scenes)  ', end='', flush=True)
 
+def print_export_progress(current: str, total: int):
+  progress = float(current) / total
+  bar = progress_bar(progress)
+  print(f'\r{bar} {int(progress * 100)}%  ', end='', flush=True)
 
 def progress_bar(progress):
   width = 42  # +1
