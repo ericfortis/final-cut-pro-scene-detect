@@ -19,7 +19,7 @@ clips.
 
 Say you want to increase the frame rate of an old video. For instance,
 using Final Cut’s Optical Flow (Machine Learning) interpolation.
-You’ll face two main problems: First, it messes
+You’ll face two main problems. First, it messes
 up scene changes by adding a transition — even if they are bladed. Second,
 it needs hundreds of gigabytes of disk space.
 
@@ -33,7 +33,6 @@ project timeline there. </details>
 
 To solve those problems we need to send individual clips to Apple
 Compressor, and let it process the frame rate change and interpolation. But how?
-
 First, we’d have to tediously cut the timeline, and then manually wrap each
 clip in its own compound clip so we can batch send them to Compressor.
 
@@ -62,7 +61,7 @@ npx mediasnacks framediff my-video.mov
 
 
 ### How to remove duplicate frames?
-`mediasnacks dropdups` removes repeated frames, and outputs ProRes.
+`mediasnacks dropdups` removes repeated frames and outputs ProRes.
 
 Example 1: Pass the repeated frame index as `-n`, such as:
 ```sh
