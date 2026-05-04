@@ -13,9 +13,13 @@ clips.
 ![](./README-example.png)
 
 
-## Motivation
-I wanted to increase the frame rate of old videos using Final Cut’s Optical Flow
-(Machine Learning) interpolation and I faced two main problems. First, it messes
+## Use Cases
+
+### Increasing the frame rate of an edited video
+
+Say you want to increase the frame rate of an old video. For instance,
+using Final Cut’s Optical Flow (Machine Learning) interpolation.
+You’ll face two main problems: First, it messes
 up scene changes by adding a transition — even if they are bladed. Second,
 it needs hundreds of gigabytes of disk space.
 
@@ -34,6 +38,47 @@ First, we’d have to tediously cut the timeline, and then manually wrap each
 clip in its own compound clip so we can batch send them to Compressor.
 
 `fcpscene` automates that process.
+
+
+## What if the video FPS has already been increased but incorrectly?
+
+<details>
+
+<summary>Learn more…</summary>
+
+Say you have a video that was originally shot at 25fps, and it was fast-upped to 30fps (without interpolation). Or, a
+30fps that was upped to 60fps also by duplicating frames. Respectively, the 6th and 2nd frame in the sequence is
+duplicate, which looks like a video jank.
+
+To determine and fix that, there’s a sister tool called [mediasnacks](https://github.com/ericfortis/mediasnacks)
+
+### How can I determine which frame is repeated?
+This command will use `ffplay` so you can hit the `s` key to play frame-by-frame, and count at which index there’s a
+full black frame. By the way, it’s possible to have more than one repeated index.
+```sh
+npx mediasnacks framediff my-video.mov
+```
+
+
+
+### How to remove duplicate frames?
+`mediasnacks dropdups` removes repeated frames, and outputs ProRes.
+
+Example 1: Pass the repeated frame index as `-n`, such as:
+```sh
+npx mediasnacks dropdups -n2 my-video.mp4
+```
+
+Example 2: If you can’t tell with certainty which is the repeated frame, or if it has many
+repeated, you can auto-detect it, but keep in mind that this is slower and might not be as
+accurate.
+```sh
+npx mediasnacks dropdups my-video.mp4
+```
+</details>
+
+
+
 
 
 ## Before Installing
@@ -95,6 +140,20 @@ importing the project. For example, that will happen if your video is in your
 ⚠️Desktop, ⚠️Documents, or any other TCC-protected folder, regardless of where
 the .fcpxml file is.
 </details>
+
+### 3. For accurate cuts, convert it to ProRes (or DNxHD)
+```sh
+ffmpeg -i my-video.mp4 -c:v prores_ks -profile:v 3 -pix_fmt yuv422p10le my-video.mov
+```
+
+| Profile  | id |
+| -------- | -- |
+| proxy    | 0  |
+| lt       | 1  |
+| standard | 2  |
+| hq       | 3  |
+| 4444     | 4  |
+| 4444xq   | 5  |
 
 
 ## Running
