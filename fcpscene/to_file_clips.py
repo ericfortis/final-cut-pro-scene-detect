@@ -21,7 +21,7 @@ def to_file_clips(cuts: CutTimes, v: VideoAttr, bus: EventBus):
     if process:
       process.terminate()
 
-  bus.subscribe_stop(on_stop)
+  bus.subscribe_export_stop(on_stop)
 
   clips = cuts_to_file_clips(cuts)
   n_clips = len(clips)
@@ -52,7 +52,7 @@ def to_file_clips(cuts: CutTimes, v: VideoAttr, bus: EventBus):
       process.terminate()
 
   finally:
-    bus.unsubscribe_stop()
+    bus.unsubscribe_export_stop()
 
 
 def vcodec_for(v: VideoAttr) -> list[str]:

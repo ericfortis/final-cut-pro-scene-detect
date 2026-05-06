@@ -34,6 +34,7 @@ class EventBus:
     self._unsubscribe_all('DETECT.stop')
 
 
+
   def emit_export_progress(self, *args):
     self._emit('EXPORT.progress', *args)
 
@@ -42,3 +43,13 @@ class EventBus:
 
   def unsubscribe_export_progress(self):
     self._unsubscribe_all('EXPORT.progress')
+
+
+  def emit_export_stop(self):
+    self._emit('EXPORT.stop')
+
+  def subscribe_export_stop(self, callback):
+    self._subscribe('EXPORT.stop', callback)
+
+  def unsubscribe_export_stop(self):
+    self._unsubscribe_all('EXPORT.stop')
