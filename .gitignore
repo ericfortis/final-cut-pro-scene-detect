@@ -2,3 +2,4 @@
 __pycache__
 .fcpscene.app
 .iconset
+tests/fixtures/60fps/

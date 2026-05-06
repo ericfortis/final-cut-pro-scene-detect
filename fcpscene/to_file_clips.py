@@ -1,4 +1,5 @@
 import subprocess
+from pathlib import Path
 
 from .ffmpeg import ffmpeg
 from .video_attr import VideoAttr
@@ -7,7 +8,7 @@ from .cuts_to_clips import cuts_to_file_clips
 from .detect_scene_changes import CutTimes
 
 
-def to_file_clips(cuts: CutTimes, v: VideoAttr, bus: EventBus) -> str:
+def to_file_clips(cuts: CutTimes, v: VideoAttr, bus: EventBus) -> Path:
   """Splits the original video into multiple files based on detected scenes"""
   output_dir = v.path.parent / v.path.stem
   output_dir.mkdir(parents=True, exist_ok=True)
@@ -31,17 +32,17 @@ def to_file_clips(cuts: CutTimes, v: VideoAttr, bus: EventBus) -> str:
     for clip in clips:
       if is_stopped:
         break
-      bus.emit_export_progress(clip.seq, n_clips)
+      bus.emit_export_progress(int(clip.seq), n_clips)
       cmd = [
         ffmpeg,
         '-y',
         '-hide_banner',
         '-ss', str(clip.start),
         '-to', str(clip.end),
-        '-i', str(v.path),
+        '-i', v.path,
         *vcodec,
         '-avoid_negative_ts', 'make_non_negative',
-        str(output_dir / f'{v.path.stem}_{clip.seq}{v.path.suffix}')
+        output_dir / f'{v.path.stem}_{clip.seq}{v.path.suffix}'
       ]
       process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
       process.communicate()

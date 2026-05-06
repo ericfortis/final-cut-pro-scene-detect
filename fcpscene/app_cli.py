@@ -125,8 +125,8 @@ def process_cuts(cuts, v, mode, out_file, bus):
   if mode == 'files':
     print('\nExporting clip files…')
     bus.subscribe_export_progress(print_export_progress)
-    to_file_clips(cuts, v, bus)
-    print(f'\nDone.')
+    out_dir = to_file_clips(cuts, v, bus)
+    print(f'\nfile://{out_dir.resolve()}')
     return
 
   if out_file and out_file.endswith('.csv'):
@@ -157,8 +157,8 @@ def print_detect_progress(progress, cuts):
   bar = progress_bar(progress)
   print(f'\r{bar} {int(progress * 100)}% ({count_scenes(cuts, progress)} Scenes)  ', end='', flush=True)
 
-def print_export_progress(current: str, total: int):
-  progress = float(current) / total
+def print_export_progress(current: int, total: int):
+  progress = current / total
   bar = progress_bar(progress)
   print(f'\r{bar} {int(progress * 100)}%  ', end='', flush=True)
 
