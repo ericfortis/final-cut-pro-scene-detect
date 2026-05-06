@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import sys
 import json
 import tempfile
 import threading
@@ -426,7 +427,9 @@ class GUI:
     def run():
       self.export_files_btn.config(text='Stop Exporting')
       try:
-        to_file_clips(self.cuts, self.v, self.bus)
+        output_dir = to_file_clips(self.cuts, self.v, self.bus)
+        if sys.platform == 'darwin':
+          subprocess.run(['open', output_dir])
       except subprocess.CalledProcessError as e:
         self.root.after(0, lambda: messagebox.showerror('Export Error', f'FFmpeg failed:\n{e.stderr.decode()}'))
       except Exception as e:

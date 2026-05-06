@@ -7,7 +7,7 @@ from .cuts_to_clips import cuts_to_file_clips
 from .detect_scene_changes import CutTimes
 
 
-def to_file_clips(cuts: CutTimes, v: VideoAttr, bus: EventBus):
+def to_file_clips(cuts: CutTimes, v: VideoAttr, bus: EventBus) -> str:
   """Splits the original video into multiple files based on detected scenes"""
   output_dir = v.path.parent / v.path.stem
   output_dir.mkdir(parents=True, exist_ok=True)
@@ -53,6 +53,7 @@ def to_file_clips(cuts: CutTimes, v: VideoAttr, bus: EventBus):
 
   finally:
     bus.unsubscribe_export_stop()
+    return output_dir
 
 
 def vcodec_for(v: VideoAttr) -> list[str]:
