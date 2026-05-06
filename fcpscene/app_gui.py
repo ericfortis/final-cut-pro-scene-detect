@@ -417,7 +417,7 @@ class GUI:
       return
 
     def on_export_files_progress(current, total):
-      self.export_files_progress.set(f'{current}/{total}')
+      self.export_files_progress.set(f'{int(current)}/{total}')
       self.root.update_idletasks()
 
     self.bus.subscribe_export_progress(on_export_files_progress)

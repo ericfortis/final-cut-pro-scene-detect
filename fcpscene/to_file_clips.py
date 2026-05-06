@@ -25,6 +25,8 @@ def to_file_clips(cuts: CutTimes, v: VideoAttr, bus: EventBus):
 
   clips = cuts_to_file_clips(cuts)
   n_clips = len(clips)
+
+  vcodec = vcodec_for(v)
   try:
     for clip in clips:
       if is_stopped:
@@ -37,7 +39,7 @@ def to_file_clips(cuts: CutTimes, v: VideoAttr, bus: EventBus):
         '-ss', str(clip.start),
         '-to', str(clip.end),
         '-i', str(v.path),
-        '-c', 'copy',
+        *vcodec,
         '-avoid_negative_ts', 'make_non_negative',
         str(output_dir / f'{v.path.stem}_{clip.seq}{v.path.suffix}')
       ]
@@ -51,3 +53,22 @@ def to_file_clips(cuts: CutTimes, v: VideoAttr, bus: EventBus):
 
   finally:
     bus.unsubscribe_stop()
+
+
+def vcodec_for(v: VideoAttr) -> list[str]:
+  if v.intraframe_coded:
+    return ['-c:v', 'copy']
+
+  # Re-encoding for accurate splits
+  encoder, crf = {
+    'h264': ('libx264', '18'),
+    'hevc': ('libx265', '20'),
+    'vp9': ('libvpx-vp9', '31'),
+    'av1': ('libsvtav1', '30'),
+  }.get(v.codec_name, ('libx264', '18'))
+  return [
+    '-c:v', encoder,
+    '-crf', crf,
+    '-preset', 'veryfast',
+    '-pix_fmt', 'yuv420p'
+  ]

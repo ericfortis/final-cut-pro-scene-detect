@@ -1,4 +1,4 @@
-__version__ = '1.11.1'
+__version__ = '1.11.2'
 __repo_url__ = 'https://github.com/ericfortis/final-cut-pro-scene-detect'
 __title__ = 'Final Cut Pro Scene Detector'
 __description__ = 'Generates a Final Cut Pro XML project with scene cuts from a video'

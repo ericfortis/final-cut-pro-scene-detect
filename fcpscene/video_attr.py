@@ -22,6 +22,7 @@ class FFProbe:
 
   codec_name: str = ''
   codec_type: str = ''
+  has_b_frames: int = 0
 
   color_trc: str = ''
   colorspace: str = ''
@@ -40,6 +41,8 @@ class VideoAttr(FFProbe):
       self.width = int(self.width)
       self.height = int(self.height)
       self.duration = float(self.duration)
+
+      self.has_b_frames = int(self.has_b_frames)
 
       fps_numerator, fps_denominator = map(int, self.r_frame_rate.split('/'))
       self.fps_numerator = fps_numerator
@@ -94,6 +97,43 @@ class VideoAttr(FFProbe):
       ('bt2020', 'smpte2084', 'bt2020nc'): '9-16-9',
       ('bt2020', 'arib-std-b67', 'bt2020nc'): '9-18-9',
     }.get((self.color_primaries, self.color_trc, self.colorspace), '1-1-1')
+
+  @property
+  def intraframe_coded(self) -> bool:
+    intra_only_codecs = {
+      'prores', 'dnxhd', 'dnxhr', 'mjpeg', 'png', 'dvvideo', 'qtrle', 'rawvideo', 'v210'
+    }
+    if self.codec_name in intra_only_codecs:
+      return True
+    if int(self.has_b_frames) > 0:
+      return False
+    return self._has_interframe_packets()
+
+  def _has_interframe_packets(self, sample_frames: int = 120) -> bool:
+    """
+    Scans the start of the file for P or B frames.
+    This is for H264/HEVC/VP9 that might be All-Intra but report 0 B-frames
+    """
+    cmd = [
+      ffprobe,
+      '-v', 'error',
+      '-select_streams', 'v:0',
+      '-read_intervals', f'%+#{sample_frames}',
+      '-show_entries', 'frame=pict_type',
+      '-of', 'csv=p=0',
+      str(self.path)
+    ]
+    try:
+      out = subprocess.check_output(cmd, stderr=subprocess.DEVNULL).decode('utf-8', 'ignore')
+      if not out.strip():
+        return False
+      return not any(f in out for f in ('P', 'B'))
+    except (subprocess.CalledProcessError, FileNotFoundError):
+      self._runtime_error = "ffprobe failed to sample frames"
+      return False
+    except Exception as e:
+      self._runtime_error = f"Unexpected error during intra-check: {e}"
+      return False
 
 
   def parse(self, attrs: Sequence[Field]):
