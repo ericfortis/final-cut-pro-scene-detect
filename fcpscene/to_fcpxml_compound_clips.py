@@ -32,8 +32,7 @@ def to_fcpxml_compound_clips(cuts: CutTimes, v: VideoAttr) -> str:
       <media-rep kind="original-media" src="{v.file_uri}"/>
     </asset>'''
 
-  for c in clips:
-    xml += f'''
+  for c in clips: xml += f'''
     <media id="{c.ref_id}" name="{v.name}_{c.seq}">
       <sequence format="r1" tcStart="0s">
         <spine>
@@ -50,8 +49,7 @@ def to_fcpxml_compound_clips(cuts: CutTimes, v: VideoAttr) -> str:
         <sequence format="r1" tcStart="0s">
           <spine>'''
 
-  for c in clips:
-    xml += f'''
+  for c in clips: xml += f'''
             <ref-clip ref="{c.ref_id}" offset="{c.offset}" duration="{c.duration}"/>'''
 
   xml += f'''

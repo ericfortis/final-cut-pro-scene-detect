@@ -15,21 +15,21 @@ clips.
 
 ## Use Cases
 
-### Increasing the frame rate of an edited video
+### Increasing the frame rate of a video with cuts
 
-Say you want to increase the frame rate of an old video. For instance,
-using Final Cut’s Optical Flow (Machine Learning) interpolation.
-You’ll face two main problems. First, it messes
-up scene changes by adding a transition — even if they are bladed. Second,
-it needs hundreds of gigabytes of disk space.
+Say you want to increase the frame rate of an old video using Final Cut’s Optical Flow
+(Machine Learning) interpolation. You’ll face two main problems. First, FCP messes up
+scene changes because it interpolates cuts — even if they are bladed.
+Second, it needs hundreds of gigabytes of disk space.
 
 <details>
 <summary>Third minor problem</summary>
 
-Changing frame rate in FCP messes up clip boundaries, but that’s solvable
+Changing frame rate in FCP messes up clip boundaries, but that’s solvable by
 pre-encoding in ProRes. By the way, FCP doesn’t support changing frame rate, but
 we can create a new project with the desired frame rate and paste the old
-project timeline there. </details>
+project timeline there.
+</details>
 
 To solve those problems we need to send individual clips to Apple
 Compressor, and let it process the frame rate change and interpolation. But how?
@@ -45,39 +45,36 @@ clip in its own compound clip so we can batch send them to Compressor.
 
 <summary>Learn more…</summary>
 
-Say you have a video that was originally shot at 25fps, and it was fast-upped to 30fps (without interpolation). Or, a
-30fps that was upped to 60fps also by duplicating frames. Respectively, the 6th and 2nd frame in the sequence is
-duplicate, which looks like a video jank.
+Say you have a video that was originally shot at 25fps, and it was fast-upped (without
+interpolation) to 30fps. Or, a 30fps that was upped to 60fps also by duplicating frames.
+Respectively, the 6th and 2nd frame in the sequence is duplicate, which looks janky.
 
-To determine and fix that, there’s a sister tool called [mediasnacks](https://github.com/ericfortis/mediasnacks)
+To determine and fix that, there’s a sister tool: [mediasnacks](https://github.com/ericfortis/mediasnacks).
 
-### How can I determine which frame is repeated?
-This command will use `ffplay` so you can hit the `s` key to play frame-by-frame, and count at which index there’s a
-full black frame. By the way, it’s possible to have more than one repeated index.
+### How can I determine which video frame is repeated?
+This command will use `ffplay` so you can hit <kbd>s</kbd> to play frame-by-frame, and
+count at which index there’s a full black frame. By the way, it’s possible to have more
+than one repeated index.
 ```sh
 npx mediasnacks framediff my-video.mov
 ```
 
 
-
-### How to remove duplicate frames?
+### How to remove duplicate video frames?
 `mediasnacks dropdups` removes repeated frames and outputs ProRes.
 
-Example 1: Pass the repeated frame index as `-n`, such as:
+**Example 1:** Pass the repeated frame index as `-n`, such as:
 ```sh
 npx mediasnacks dropdups -n2 my-video.mp4
 ```
 
-Example 2: If you can’t tell with certainty which is the repeated frame, or if it has many
-repeated, you can auto-detect it, but keep in mind that this is slower and might not be as
-accurate.
+**Example 2:** If you can’t tell with certainty which one is the repeated frame, or if it
+has many repeated, you can auto-detect it, but keep in mind that this is slower and might
+not be as accurate.
 ```sh
 npx mediasnacks dropdups my-video.mp4
 ```
 </details>
-
-
-
 
 
 ## Before Installing
@@ -110,7 +107,6 @@ In Finder (not in the Terminal), Go &rarr; **Go to Folder** and type **/opt/home
 Then move **fcpscene.app** to your Applications folder.
 
 
-
 ## Before Running
 
 ### 1. Create an event called "fcpscene" in your Library
@@ -140,19 +136,22 @@ importing the project. For example, that will happen if your video is in your
 the .fcpxml file is.
 </details>
 
-### 3. For accurate cuts, convert it to ProRes (or DNxHD)
+### 3. For accurate cuts, convert it to ProRes (or any intraframe encoding)
 ```sh
-ffmpeg -i my-video.mp4 -c:v prores_ks -profile:v 3 -pix_fmt yuv422p10le my-video.mov
+npx mediasnacks prores my-video.mp4
 ```
+<details>
+<summary>ProRes profiles</summary>
 
 | Profile  | id |
-| -------- | -- |
+|----------|----|
 | proxy    | 0  |
 | lt       | 1  |
 | standard | 2  |
 | hq       | 3  |
 | 4444     | 4  |
 | 4444xq   | 5  |
+</details>
 
 
 ## Running
@@ -277,8 +276,6 @@ fcpscene --mode files my-video.mp4
 ```
 
 
-
-
 <br/>
 
 ### Batch Processing
@@ -359,10 +356,10 @@ video_foo_073.mov 0.866667 2.066667
 <summary><strong>Batch Export Compound Clips</strong></summary>
 
 1. Select the all the **Compound Clips** you want to export.
-![](README-tip-fcp-batch-export-1.png)
+   ![](README-tip-fcp-batch-export-1.png)
 
 2. **File** &rarr; **Share N Clips**
-![](README-tip-fcp-batch-export-2.png)
+   ![](README-tip-fcp-batch-export-2.png)
 </details>
 
 <br/>
@@ -410,7 +407,8 @@ Instead of cutting the timeline, there are many tools for splitting the video in
 <details>
 <summary><b>Kdenlive</b> (for programmers)</summary>
 
-**Caveats**: There are many 1-frame-off cuts due to rounding errors. Especially with non-integer frame rates such as 29.97
+**Caveats**: There are many 1-frame-off cuts due to rounding errors. Especially with non-integer frame rates such as
+29.97
 - Drop the video into the Project Bin &rarr; Right-click &rarr; Clip Jobs &rarr; Automatic Scene Split
 - Expand the video on the Project Bin &rarr; Select all sequences &rarr; Drop them to the timeline
 - File &rarr; OpenTimelineIO Export

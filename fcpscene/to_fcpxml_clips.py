@@ -27,8 +27,7 @@ def to_fcpxml_clips(cuts: CutTimes, v: VideoAttr) -> str:
         <sequence format="r1" tcStart="0s">
           <spine>'''
 
-  for c in clips:
-    xml += f'''
+  for c in clips: xml += f'''
             <asset-clip ref="r2" offset="{c.offset}" start="{c.offset}" duration="{c.duration}"/>'''
 
   xml += f'''
