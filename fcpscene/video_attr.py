@@ -109,7 +109,7 @@ class VideoAttr(FFProbe):
   def _has_interframe_packets(self, sample_frames: int = 120) -> bool:
     """
     Scans the start of the file for P or B frames.
-    This is for H264/HEVC/VP9 that might be All-Intra but report 0 B-frames
+    This is for H264/HEVC/VP9 that might be all-intraframe.
     """
     cmd = [
       ffprobe,
