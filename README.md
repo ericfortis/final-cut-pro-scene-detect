@@ -1,4 +1,7 @@
+<img src="fcpscene.app/icon.svg" width="80"/>
+
 # fcpscene
+
 
 ## Final Cut Pro Scene Detector
 
@@ -15,7 +18,7 @@ clips.
 
 ## Use Cases
 
-### Increasing the frame rate of a video with cuts
+### Increasing the frame rate of already edited videos
 
 Say you want to increase the frame rate of an old video using Final Cut’s Optical Flow
 (Machine Learning) interpolation. You’ll face two main problems. First, FCP messes up
@@ -39,14 +42,14 @@ clip in its own compound clip so we can batch send them to Compressor.
 `fcpscene` automates that process.
 
 
-## What if the video FPS has already been increased but incorrectly?
+## What if the video has already been retimed but incorrectly?
 
 <details>
 
 <summary>Learn more…</summary>
 
 Say you have a video that was originally shot at 25fps, and it was fast-upped (without
-interpolation) to 30fps. Or, a 30fps that was upped to 60fps also by duplicating frames.
+interpolation) to 30fps. Or, a 30fps that was retimed to 60fps also by duplicating frames.
 Respectively, the 6th and 2nd frame in the sequence is duplicate, which looks janky.
 
 To determine and fix that, there’s a sister tool: [mediasnacks](https://github.com/ericfortis/mediasnacks).
@@ -61,8 +64,6 @@ npx mediasnacks framediff my-video.mov
 
 
 ### How to remove duplicate video frames?
-`mediasnacks dropdups` removes repeated frames and outputs ProRes.
-
 **Example 1:** Pass the repeated frame index as `-n`, such as:
 ```sh
 npx mediasnacks dropdups -n2 my-video.mp4
@@ -74,6 +75,8 @@ not be as accurate.
 ```sh
 npx mediasnacks dropdups my-video.mp4
 ```
+_That `dropdups` command always encodes to ProRes 422 HQ._
+
 </details>
 
 
@@ -138,19 +141,19 @@ the .fcpxml file is.
 
 ### 3. For accurate cuts, convert it to ProRes (or any intraframe encoding)
 ```sh
-npx mediasnacks prores my-video.mp4
+npx mediasnacks prores --profile 3 my-video.mp4
 ```
 <details>
 <summary>ProRes profiles</summary>
 
 | Profile  | id |
 |----------|----|
-| proxy    | 0  |
-| lt       | 1  |
+| proxy | 0  |
+| lt | 1  |
 | standard | 2  |
-| hq       | 3  |
-| 4444     | 4  |
-| 4444xq   | 5  |
+| hq 422 | 3  |
+| 4444 | 4  |
+| 4444xq | 5  |
 </details>
 
 
