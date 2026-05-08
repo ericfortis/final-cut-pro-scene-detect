@@ -8,12 +8,12 @@
 This program finds scene changes in videos and generates a Final Cut Pro
 project with cuts at those scene changes, using either compound or normal clips.
 
-![](README-gui.png)
+![](docs/gui.png)
 
 That example processed a video with five cuts, so the timeline has six compound
 clips.
 
-![](./README-example.png)
+![](docs/example.png)
 
 
 ## Use Cases
@@ -158,8 +158,10 @@ npx mediasnacks prores --profile 3 my-video.mp4
 
 
 ## Running
-The **fcpscene.app** is a droplet, which means you can drag a video file onto it,
+The **fcpscene.app** is a droplet, so you can drag a video file onto it,
 or right-click the video file and select **Open With** &rarr; **fcpscene.app**
+
+<img src="docs/droplet.png" width="500px">
 
 A 15-minute 4K 60fps video takes about a minute to run on a 14-core M4. You’ll
 see the detected cut times as it runs — if you hit "Stop", you can still export
@@ -359,10 +361,10 @@ video_foo_073.mov 0.866667 2.066667
 <summary><strong>Batch Export Compound Clips</strong></summary>
 
 1. Select the all the **Compound Clips** you want to export.
-   ![](README-tip-fcp-batch-export-1.png)
+   ![](docs/tip-fcp-batch-export-1.png)
 
 2. **File** &rarr; **Share N Clips**
-   ![](README-tip-fcp-batch-export-2.png)
+   ![](docs/tip-fcp-batch-export-2.png)
 </details>
 
 <br/>
@@ -379,7 +381,7 @@ In iMovie there’s (Cmd+J), but in Final Cut we don’t _join_ clips, we _delet
 Alternatively, you can drag each clip edge until it touches the adjacent one to
 remove the cut.
 
-![](README-tip-fcp-join-clips.png)
+![](docs/tip-fcp-join-clips.png)
 </details>
 
 <br/>
@@ -393,7 +395,7 @@ remove the cut.
 3. Go to the ⓘ Info Inspector Tab (Ctrl+Tab)
 4. Type a name
 
-![](README-tip-fcp-batch-rename.png)
+![](docs/tip-fcp-batch-rename.png)
 </details>
 
 
