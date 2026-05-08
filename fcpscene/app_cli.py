@@ -108,12 +108,12 @@ def main():
 
   try:
     cuts = detect_scene_changes(v, bus, args.sensitivity, args.proxy_width, args.min_scene_seconds)
-    process_cuts(cuts, v, args.mode, args.output, bus)
+    process_cuts(cuts, v, args.mode, args.output, args.quiet, bus)
   except Exception as e:
     exit_error(f'Unexpected error while running ffmpeg: {e}')
 
 
-def process_cuts(cuts, v, mode, out_file, bus):
+def process_cuts(cuts, v, mode, out_file, quiet, bus):
   if mode == 'count':
     print(len(extract_scene_changes(cuts)))
     return
@@ -123,8 +123,9 @@ def process_cuts(cuts, v, mode, out_file, bus):
     return
 
   if mode == 'files':
-    print('\nExporting clip files…')
-    bus.subscribe_export_progress(print_export_progress)
+    if not quiet:
+      print('\nExporting clip files…')
+      bus.subscribe_export_progress(print_export_progress)
     out_dir = to_file_clips(cuts, v, bus)
     print(f'\nfile://{out_dir.resolve()}')
     return

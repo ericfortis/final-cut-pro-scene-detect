@@ -22,7 +22,7 @@ class FFProbe:
 
   codec_name: str = ''
   codec_type: str = ''
-  has_b_frames: int = 0
+  has_b_frames: bool = False
 
   color_trc: str = ''
   colorspace: str = ''
@@ -38,11 +38,8 @@ class VideoAttr(FFProbe):
 
     self.parse(fields(FFProbe))
     if not self.error:
-      self.width = int(self.width)
-      self.height = int(self.height)
       self.duration = float(self.duration)
-
-      self.has_b_frames = int(self.has_b_frames)
+      self.has_b_frames = self.has_b_frames > 0
 
       fps_numerator, fps_denominator = map(int, self.r_frame_rate.split('/'))
       self.fps_numerator = fps_numerator
@@ -105,7 +102,7 @@ class VideoAttr(FFProbe):
     }
     if self.codec_name in intra_only_codecs:
       return True
-    if int(self.has_b_frames) > 0:
+    if self.has_b_frames:
       return False
     return self._has_interframe_packets()
 
