@@ -42,7 +42,7 @@ clip in its own compound clip so we can batch send them to Compressor.
 `fcpscene` automates that process.
 
 
-## What if the video has already been retimed but incorrectly?
+## How to fix a video that has duplicate frames?
 
 <details>
 
@@ -53,27 +53,37 @@ interpolation) to 30fps. Or, a 30fps that was retimed to 60fps also by duplicati
 Respectively, the 6th and 2nd frame in the sequence is duplicate, which looks janky.
 
 To determine and fix that, there’s a sister tool: [mediasnacks](https://github.com/ericfortis/mediasnacks).
+You can install it with:
+```shell
+npm install -g mediasnacks
+```
 
-### How can I determine which video frame is repeated?
+### How to determine which video frame is repeated?
+
+#### Option A (manually)
 This command will use `ffplay` so you can hit <kbd>s</kbd> to play frame-by-frame, and
 count at which index there’s a full black frame. By the way, it’s possible to have more
 than one repeated index.
 ```sh
-npx mediasnacks framediff my-video.mov
+mediasnacks framediff my-video.mov
 ```
 
+#### Option B (automated)
+```sh
+mediasnacks detectdups my-video.mov
+```
 
 ### How to remove duplicate video frames?
 **Example 1:** Pass the repeated frame index as `-n`, such as:
 ```sh
-npx mediasnacks dropdups -n2 my-video.mp4
+mediasnacks dropdups -n2 my-video.mp4
 ```
 
 **Example 2:** If you can’t tell with certainty which one is the repeated frame, or if it
 has many repeated, you can auto-detect it, but keep in mind that this is slower and might
 not be as accurate.
 ```sh
-npx mediasnacks dropdups my-video.mp4
+mediasnacks dropdups my-video.mp4
 ```
 _That `dropdups` command always encodes to ProRes 422 HQ._
 
@@ -141,7 +151,7 @@ the .fcpxml file is.
 
 ### 3. For accurate cuts, convert it to ProRes (or any intraframe encoding)
 ```sh
-npx mediasnacks prores --profile 3 my-video.mp4
+mediasnacks prores --profile 3 my-video.mp4
 ```
 <details>
 <summary>ProRes profiles</summary>
